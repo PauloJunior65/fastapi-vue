@@ -1,4 +1,5 @@
 from pydantic import BaseSettings
+from typing import Set
 from functools import lru_cache
 
 class Settings(BaseSettings):
@@ -12,11 +13,19 @@ class Settings(BaseSettings):
     REDIS_DB:int = 1
     REDIS_TIMEOUT:int = 300
     
-    DATABASE_URL:str = ""
+    DATABASE_URL:str ="mysql+mysqldb://root@localhost/fastapi-vue"
+    
+    DEFAULT_LANGUAGE:str = "pt-BR"
+    SUPPORTED_LANGUAGE: Set[str] = set(['pt-BR','en'])
 
     class Config:
         env_file = ".env"
-
+    
+    @property
+    def languages(self):
+        return list(set([self.DEFAULT_LANGUAGE]) | self.SUPPORTED_LANGUAGE)
+        
+    @property
     def redis(self):
         return {
             'host': self.REDIS_HOST,
@@ -25,7 +34,8 @@ class Settings(BaseSettings):
             'db': self.REDIS_DB
         }
     
-    def database(self, db:str="default"):
+    @property
+    def databases(self):
         return {
             'default': self.DATABASE_URL,
         }

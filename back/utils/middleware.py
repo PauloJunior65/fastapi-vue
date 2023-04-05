@@ -1,28 +1,43 @@
 from fastapi import FastAPI,Request
-from utils.babel import _,babel,configs
+from .babel import InternationalizationMiddleware,babel
 from datetime import timedelta
+from .config import get_settings
 import time
 
-SUPPORTED_LANGUAGE = ['pt-BR','en','zh']
-
+settings = get_settings()
 
 class Middleware:
+    """
+    Middleware to set the language of the request
+    """
     def __init__(self, app):
         self.app = app
 
     async def __call__(self, scope, receive, send):
         assert scope["type"] == "http"
         headers = dict(scope["headers"])
-        lang = str(headers.get(b'accept-language',b''), 'UTF-8').split(',')[0]
-        headers[b'accept-language'] = bytes(configs.BABEL_DEFAULT_LOCALE if lang not in SUPPORTED_LANGUAGE else lang,'UTF-8')
+        lang = str(headers.get(b'accept-language',b''), 'UTF-8').split(',')[0].lower().replace('-','_')
+        lang = settings.DEFAULT_LANGUAGE if lang not in settings.languages else lang
+        print('LANG:',lang)
+        headers[b'accept-language'] = bytes(lang,'UTF-8')
         scope["headers"] = [(k, v) for k, v in headers.items()]
         await self.app(scope, receive, send)
 
 def add_middlewares(app:FastAPI):
     app.add_middleware(Middleware)
+    app.add_middleware(InternationalizationMiddleware, babel=babel)
     
     @app.middleware("http")
     async def add_process_time_header(request: Request, call_next):
+        """Middleware to add process time to response header
+
+        Args:
+            request (Request): _description_
+            call_next (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         start_time = time.time()
         response = await call_next(request)
         process_time = time.time() - start_time

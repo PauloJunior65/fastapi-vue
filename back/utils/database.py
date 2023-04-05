@@ -1,15 +1,21 @@
-from sqlalchemy import create_engine,inspect
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from .config import get_settings
 
 settings = get_settings()
+def _create_session_database(url:str):
+    engine = create_engine(url)
+    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    return SessionLocal
 
-engine = create_engine(settings.DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+_session_databases = {name: _create_session_database(url) for name,url in settings.databases.items()}
 
 def get_db():
     """Default database"""
-    db = SessionLocal()
+    db = _session_databases.get("default")
+    if db is None:
+        raise ValueError("Database default not found")
+    db = db()
     try:
         yield db
     finally:
@@ -21,12 +27,10 @@ class DBCustom:
         pass
 
     def __call__(self, db:str="default"):
-        database = settings.database()
-        if db not in database:
+        db = _session_databases.get(db)
+        if db is None:
             raise ValueError(f"Database {db} not found")
-        engine = create_engine(database.get(db))
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        db = SessionLocal()
+        db = db()
         try:
             yield db
         finally:

@@ -29,8 +29,7 @@ class CacheCustom:
 
 class RedisSerializer:
     """
-    Similar to PickSerializer, except integers are serialized as native Redis
-    integers for better incr() and decr() atomicity.
+    Serializer for redis cache.
     """
 
     def __init__(self, protocol=None):
