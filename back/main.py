@@ -4,16 +4,15 @@ from utils.middleware import add_middlewares
 app = FastAPI()
 add_middlewares(app)
 
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from utils import get_db,DBCustom,covert_to_dict,covert_to_dict_list
+from utils import *
 
 @app.get("/")
-async def read_item(request: Request,db: Session = Depends(get_db)):
-    a = db.execute(text('SELECT * FROM auth_user')).fetchall()
+async def read_item(request: Request,cache:Cache = Depends(get_cache),cache2:Cache = Depends(CacheCustom(db=2))):
+    a = cache.get_or_set('b:b2',{'a':1})
+    a = cache2.get_or_set('a:b2',{'a':1})
     return {
         'locale': request.headers.get('accept-language'),
-        'db': covert_to_dict_list(a),
+        'db': a,
     }
 
 if __name__ == "__main__":

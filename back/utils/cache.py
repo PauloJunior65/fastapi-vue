@@ -4,32 +4,65 @@ import redis
 
 settings = get_settings()
 
+
+def _hidrate_cache(host: str = "127.0.0.1", port: int = 6379, username: str = None, password: str = None, db: int = 1):
+    if username or password:
+        return {
+            'host': host,
+            'port': port,
+            'username': username if username else 'default',
+            'password': password,
+            'db': db
+        }
+    else:
+        return {
+            'host': host,
+            'port': port,
+            'db': db
+        }
+
+_caches = {k: _hidrate_cache(**v) for k, v in settings.caches.items()}
+
+
 def get_cache():
-    """Default cache
-    """
-    db = RedisCache()
+    """Cache padrão"""
+    db = _caches.get("default")
+    if db is None:
+        raise ValueError("Cache default not found")
+    db = Cache(**db)
     try:
         yield db
     finally:
         db._cache.close()
 
-class CacheCustom:
-    """Custom cache
-    """
-    def __init__(self):
-        pass
 
-    def __call__(self, **kwars):
-        db = RedisCache(**kwars)
+class CacheCustom:
+    """Cache personalizado"""
+
+    def __init__(self, con:str='default', db: int = None):
+        """Cache personalizado
+
+        Args:
+            con (str, optional): Nome da conexão. Defaults to 'default'.
+            db (int, optional): Banco de dados.
+        """
+        self.con = _caches.get(con,{}).copy()
+        if not self.con:
+            raise ValueError(f"Cache {con} not found")
+        if db is not None:
+            self.con['db'] = db
+
+    def __call__(self):
+        db = Cache(**self.con)
         try:
             yield db
         finally:
             db._cache.close()
 
 
-class RedisSerializer:
+class CacheSerializer:
     """
-    Serializer for redis cache.
+    Serializador de dados para o cache.
     """
 
     def __init__(self, protocol=None):
@@ -49,22 +82,20 @@ class RedisSerializer:
             return pickle.loads(data)
 
 
-class RedisCache:
+class Cache:
     _cache: redis.Redis
 
     def __init__(self, **kwars):
-        con = settings.redis()
-        con.update(kwars)
-        self._cache = redis.Redis(**con)
-        self._serializer = RedisSerializer()
+        self._cache = redis.Redis(**kwars)
+        self._serializer = CacheSerializer()
 
-    def add(self, key: str, value, timeout:int=settings.REDIS_TIMEOUT):
+    def add(self, key: str, value, timeout: int = settings.CACHE_TIMEOUT):
         """Adiciona um valor ao cache
 
         Args:
             key (str): Cache key
             value (Any): Valor a ser adicionado
-            timeout (int, optional): Tempo de expiração em segundos. Defaults to REDIS_TIMEOUT.
+            timeout (int, optional): Tempo de expiração em segundos. Defaults to CACHE_TIMEOUT.
 
         Returns:
             bool: True se o valor foi adicionado, False caso contrário
@@ -85,23 +116,40 @@ class RedisCache:
         value = self._cache.get(key)
         return default if value is None else self._serializer.loads(value)
 
-    def set(self, key:str, value, timeout:int=settings.REDIS_TIMEOUT):
+    def set(self, key: str, value, timeout: int = settings.CACHE_TIMEOUT):
         """Adiciona ou atualiza um valor no cache
 
         Args:
             key (str): Cache key
             value (Any): Valor a ser adicionado ou atualizado
-            timeout (int, optional): Tempo de expiração em segundos. Defaults to REDIS_TIMEOUT.
+            timeout (int, optional): Tempo de expiração em segundos. Defaults to CACHE_TIMEOUT.
         """
         value = self._serializer.dumps(value)
         self._cache.set(key, value, ex=timeout)
 
-    def touch(self, key:str, timeout:int=settings.REDIS_TIMEOUT):
+    def get_or_set(self, key: str, default, timeout: int = settings.CACHE_TIMEOUT):
+        """Retorna um valor do cache ou adiciona um valor padrão
+
+        Args:
+            key (str): Cache key
+            default (Any): Valor padrão
+            timeout (int, optional): Tempo de expiração em segundos. Defaults to CACHE_TIMEOUT.
+
+        Returns:
+            Any: Valor do cache
+        """
+        value = self.get(key)
+        if value is None:
+            self.set(key, default, timeout)
+            return default
+        return value
+
+    def touch(self, key: str, timeout: int = settings.CACHE_TIMEOUT):
         """Atualiza o tempo de expiração de um valor no cache
 
         Args:
             key (str): Cache key
-            timeout (int, optional): Tempo de expiração em segundos. Defaults to REDIS_TIMEOUT.
+            timeout (int, optional): Tempo de expiração em segundos. Defaults to CACHE_TIMEOUT.
 
         Returns:
             bool: True se o valor foi atualizado, False caso contrário
@@ -111,7 +159,7 @@ class RedisCache:
         else:
             return bool(self._cache.expire(key, timeout))
 
-    def delete(self, key:str):
+    def delete(self, key: str):
         """Remove um valor do cache
 
         Args:
@@ -122,7 +170,7 @@ class RedisCache:
         """
         return bool(self._cache.delete(key))
 
-    def get_many(self, keys:list[str]):
+    def get_many(self, keys: list[str]):
         """Retorna vários valores do cache
 
         Args:
@@ -136,7 +184,7 @@ class RedisCache:
             k: self._serializer.loads(v) for k, v in zip(keys, ret) if v is not None
         }
 
-    def has_key(self, key:str):
+    def has_key(self, key: str):
         """Verifica se uma chave existe no cache
 
         Args:
@@ -147,7 +195,7 @@ class RedisCache:
         """
         return bool(self._cache.exists(key))
 
-    def incr(self, key:str, delta):
+    def incr(self, key: str, delta):
         """Incrementa um valor no cache
 
         Args:
@@ -164,12 +212,12 @@ class RedisCache:
             raise ValueError("Key '%s' not found." % key)
         return self._cache.incr(key, delta)
 
-    def set_many(self, data:dict, timeout:int=settings.REDIS_TIMEOUT):
+    def set_many(self, data: dict, timeout: int = settings.CACHE_TIMEOUT):
         """Adiciona ou atualiza vários valores no cache
 
         Args:
             data (dict): Dicionário com os valores a serem adicionados ou atualizados
-            timeout (int, optional): Tempo de expiração em segundos. Defaults to REDIS_TIMEOUT.
+            timeout (int, optional): Tempo de expiração em segundos. Defaults to CACHE_TIMEOUT.
         """
         pipeline = self._cache.pipeline()
         pipeline.mset({k: self._serializer.dumps(v) for k, v in data.items()})
@@ -180,7 +228,7 @@ class RedisCache:
                 pipeline.expire(key, timeout)
         pipeline.execute()
 
-    def delete_many(self, keys:list[str]):
+    def delete_many(self, keys: list[str]):
         """Remove vários valores do cache
 
         Args:
