@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Request
-from utils.babel import babel
 from utils.middleware import add_middlewares
 
 app = FastAPI()
@@ -12,4 +11,5 @@ async def read_item(request: Request):
     }
 
 if __name__ == "__main__":
-    babel.run_cli()
+    from utils.comands import Comands
+    Comands()

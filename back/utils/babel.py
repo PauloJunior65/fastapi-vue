@@ -16,3 +16,6 @@ babel = Babel(configs=configs)
 
 templates = Jinja2Templates(directory="templates")
 babel.install_jinja(templates)
+
+if __name__ == "__main__":
+    babel.run_cli()
