@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import sessionmaker
 from .config import get_settings
 
@@ -8,7 +8,7 @@ def _create_session_database(url:str):
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     return SessionLocal
 
-_session_databases = {name: _create_session_database(url) for name,url in settings.databases.items()}
+_session_databases = {name: _create_session_database(url) for name,url in settings.databases.items() if url}
 
 def get_db():
     """Default database"""
@@ -23,15 +23,24 @@ def get_db():
 
 class DBCustom:
     """Custom database"""
-    def __init__(self):
-        pass
-
-    def __call__(self, db:str="default"):
-        db = _session_databases.get(db)
-        if db is None:
+    def __init__(self,db:str="default"):
+        self.db = _session_databases.get(db)
+        if self.db is None:
             raise ValueError(f"Database {db} not found")
-        db = db()
+
+    def __call__(self):
+        db = self.db()
         try:
             yield db
         finally:
             db.close()
+
+def covert_to_dict(obj):
+    """Convert object SQLAlchemy to dict"""
+    if hasattr(obj, '_asdict'):
+        return obj._asdict()
+    return obj.__dict__
+
+def covert_to_dict_list(obj):
+    """Convert list object SQLAlchemy to list dict"""
+    return list(map(covert_to_dict, obj))
