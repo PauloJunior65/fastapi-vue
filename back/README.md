@@ -25,11 +25,9 @@ uvicorn main:app --reload
 ```
 ### Gerar Tradução - [DOC](https://github.com/Anbarryprojects/fastapi-babel)
 ```python
-pybabel extract -F utils/babel.cfg -o utils/messages.pot .
-pybabel extract -F utils/babel.cfg -o messages.pot .
-pybabel init -i utils/messages.pot -d lang -l en
-pybabel init -i utils/messages.pot -d lang -l pt_br
-pybabel compile -d lang
+python main.py extract -d lang
+python3 main.py init -l en
+python3 main.py compile
 ```
 ### Gerar arquivo de migração no banco
 ```python

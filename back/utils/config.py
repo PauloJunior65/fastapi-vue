@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     
     DATABASE_URL:str ="mysql+mysqldb://root@localhost/fastapi-vue"
     
-    DEFAULT_LANGUAGE:str = "pt-BR"
-    SUPPORTED_LANGUAGE: Set[str] = set(['pt-BR','en'])
+    DEFAULT_LANGUAGE:str = "pt_BR"
+    SUPPORTED_LANGUAGE: Set[str] = set(['pt_BR','en'])
 
     class Config:
         env_file = ".env"

@@ -1,31 +1,26 @@
-from fastapi import FastAPI,Request
-from .babel import InternationalizationMiddleware,babel
+from fastapi import FastAPI,Request,Response
+from fastapi_babel.middleware import InternationalizationMiddleware
+from .babel import babel
+from typing import Optional
 from datetime import timedelta
 from .config import get_settings
 import time
 
 settings = get_settings()
 
-class Middleware:
+class I18nMiddleware(InternationalizationMiddleware):
     """
-    Middleware to set the language of the request
+    Middleware para internacionalização
     """
-    def __init__(self, app):
-        self.app = app
-
-    async def __call__(self, scope, receive, send):
-        assert scope["type"] == "http"
-        headers = dict(scope["headers"])
-        lang = str(headers.get(b'accept-language',b''), 'UTF-8').split(',')[0].lower().replace('-','_')
-        lang = settings.DEFAULT_LANGUAGE if lang not in settings.languages else lang
-        print('LANG:',lang)
-        headers[b'accept-language'] = bytes(lang,'UTF-8')
-        scope["headers"] = [(k, v) for k, v in headers.items()]
-        await self.app(scope, receive, send)
+    async def dispatch(self, request: Request, call_next):
+        lang_code: Optional[str] = request.headers.get("Accept-Language", settings.DEFAULT_LANGUAGE)
+        lang_code = lang_code.split(',')[0].replace('-','_')
+        self.babel.locale = settings.DEFAULT_LANGUAGE if lang_code not in settings.languages else lang_code
+        response:Response = await call_next(request)
+        return response
 
 def add_middlewares(app:FastAPI):
-    app.add_middleware(Middleware)
-    app.add_middleware(InternationalizationMiddleware, babel=babel)
+    app.add_middleware(I18nMiddleware,babel=babel)
     
     @app.middleware("http")
     async def add_process_time_header(request: Request, call_next):

@@ -1,18 +1,18 @@
 from fastapi_babel import Babel
 from fastapi_babel import BabelConfigs
-from fastapi_babel.middleware import InternationalizationMiddleware
-from fastapi_babel import _
 from fastapi.templating import Jinja2Templates
 from pathlib import Path
-templates = Jinja2Templates(directory="templates")
+import os
+
+path = Path(__file__).parent
 configs = BabelConfigs(
-    ROOT_DIR=Path(__file__).parent.parent,
-    BABEL_DEFAULT_LOCALE="pt_br",
+    ROOT_DIR=path,
+    BABEL_DEFAULT_LOCALE="pt_BR",
     BABEL_TRANSLATION_DIRECTORY="lang",
 )
+configs.BABEL_CONFIG_FILE = os.path.join(path,'babel.cfg')
+configs.BABEL_MESSAGE_POT_FILE = os.path.join(path,'messages.pot')
 babel = Babel(configs=configs)
 
+templates = Jinja2Templates(directory="templates")
 babel.install_jinja(templates)
-
-if __name__ == "__main__":
-    babel.run_cli()
