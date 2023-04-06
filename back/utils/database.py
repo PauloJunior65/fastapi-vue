@@ -11,7 +11,7 @@ def _create_session_database(url:str):
 _session_databases = {name: _create_session_database(url) for name,url in settings.databases.items() if url}
 
 def get_db():
-    """Default database"""
+    """Banco de dados padrão"""
     db = _session_databases.get("default")
     if db is None:
         raise ValueError("Database default not found")
@@ -22,9 +22,18 @@ def get_db():
         db.close()
 
 class DBCustom:
-    """Custom database"""
-    def __init__(self,db:str="default"):
-        self.db = _session_databases.get(db)
+    """Banco de dados customizado"""
+    def __init__(self,db:str="default",url:str=None):
+        """Banco de dados customizado
+
+        Args:
+            db (str, optional): Nome da conexão. Defaults to "default".
+            url (str, optional): Url de conexão. se não for informado, será usado o nome da conexão.
+        """
+        if url is not None:
+            self.db = _create_session_database(url)
+        else:
+            self.db = _session_databases.get(db)
         if self.db is None:
             raise ValueError(f"Database {db} not found")
 

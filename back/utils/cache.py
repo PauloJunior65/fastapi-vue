@@ -39,16 +39,20 @@ def get_cache():
 class CacheCustom:
     """Cache personalizado"""
 
-    def __init__(self, con:str='default', db: int = None):
+    def __init__(self, con:str='default', db: int = None,params:dict=None):
         """Cache personalizado
 
         Args:
             con (str, optional): Nome da conexão. Defaults to 'default'.
             db (int, optional): Banco de dados.
+            params (dict, optional): Parâmetros de conexão. Se não for informado, será usado o nome da conexão.
         """
-        self.con = _caches.get(con,{}).copy()
-        if not self.con:
-            raise ValueError(f"Cache {con} not found")
+        if params is not None:
+            self.con = _hidrate_cache(**params)
+        else:
+            self.con = _caches.get(con,{}).copy()
+            if not self.con:
+                raise ValueError(f"Cache {con} not found")
         if db is not None:
             self.con['db'] = db
 
