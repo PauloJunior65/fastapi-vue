@@ -1,0 +1,40 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Python: Requirements",
+            "type": "shell",
+            "detail": "Install requirements.txt",
+            "command": "pip3 install -r requirements.txt",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "presentation": {
+                "reveal": "silent",
+                "revealProblems": "onProblem",
+                "close": true
+            },
+            "group": {
+                "kind": "build"
+            },
+        },
+        {
+            "label": "Python BUILD",
+            "command": "echo 'OK'",
+            "type": "shell",
+            "dependsOn": [
+                "Python: Requirements",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "silent",
+                "revealProblems": "onProblem",
+                "close": true
+            },
+            "hide": true
+        }
+    ]
+}

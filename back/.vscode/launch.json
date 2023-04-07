@@ -10,13 +10,15 @@
             "request": "launch",
             "module": "uvicorn",
             "args": [
-                "main:app","--reload"
+                "main:app",
+                "--reload"
             ],
             "jinja": true,
             "justMyCode": true,
             "presentation": {
-                "group": "APP"
-            }
+                "hidden": true,
+            },
+            "preLaunchTask": "Python BUILD"
         }
     ]
 }

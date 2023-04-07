@@ -1,13 +1,24 @@
 {
 	"folders": [
 		{
+			"name": "BACKEND",
 			"path": "back"
 		},
 		{
+			"name": "FRONTEND",
 			"path": "front"
 		}
 	],
-	"settings": {},
+	"settings": {
+		"editor.formatOnSave": true,
+		"files.exclude": {
+			"**/__pycache__": true,
+			"**/.venv": true,
+			"**/.github": true,
+			"**/.vscode": true,
+			"**/node_modules": true,
+		}
+	},
 	"extensions": {
 		"recommendations": [
 			"dbaeumer.vscode-eslint",
@@ -22,5 +33,21 @@
 			"njpwerner.autodocstring",
 			"visualstudioexptteam.vscodeintellicode"
 		]
-	}
+	},
+	"launch": {
+		"version": "0.2.0",
+		"configurations": [],
+		"compounds": [
+			{
+				"name": "APP RUN",
+				"configurations": [
+					"Python: FastAPI"
+				],
+				"stopAll": true,
+				"presentation": {
+					"order": 1,
+				},
+			}
+		]
+	},
 }
