@@ -8,17 +8,14 @@
             "name": "Python: FastAPI",
             "type": "python",
             "request": "launch",
-            "module": "uvicorn",
+            "program": "main.py",
             "args": [
-                "main:app",
-                "--reload"
+                "start"
             ],
+            "console": "integratedTerminal",
             "jinja": true,
             "justMyCode": true,
-            "presentation": {
-                "hidden": true
-            },
             "preLaunchTask": "Python BUILD"
-        }
+        },
     ]
 }

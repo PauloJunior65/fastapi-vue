@@ -7,5 +7,5 @@ add_middlewares(app)
 add_routers(app)
 
 if __name__ == "__main__":
-    from utils.comands import Comands
-    Comands()
+    from utils.cli import cli_app
+    cli_app(app)

@@ -1,12 +1,13 @@
 from utils import *
+from fastapi_babel import _
 
 router = APIRouter(
     tags=["auth"],
-    prefix='/user',
-    # responses={404: {"description": "Not found"}},
+    prefix='/auth',
+    responses=responses,
 )
 
 
 @router.get("")
 async def index():
-    return list(Auth.__fields__.keys())
+    return _("Not found")
