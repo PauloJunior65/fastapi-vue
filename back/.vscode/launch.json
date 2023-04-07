@@ -16,7 +16,7 @@
             "jinja": true,
             "justMyCode": true,
             "presentation": {
-                "hidden": true,
+                "hidden": true
             },
             "preLaunchTask": "Python BUILD"
         }

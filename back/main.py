@@ -1,16 +1,10 @@
-from fastapi import FastAPI, Request,Depends
+from fastapi import FastAPI
 from utils.middleware import add_middlewares
+from modules import add_routers
 
 app = FastAPI()
 add_middlewares(app)
-
-from utils import *
-
-@app.get("/")
-async def read_item(request: Request):
-    return {
-        'locale': request.headers.get('accept-language'),
-    }
+add_routers(app)
 
 if __name__ == "__main__":
     from utils.comands import Comands

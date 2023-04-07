@@ -20,7 +20,7 @@
         },
         {
             "label": "Python BUILD",
-            "command": "echo 'OK'",
+            "command": "echo 'BACKEND OK'",
             "type": "shell",
             "dependsOn": [
                 "Python: Requirements",

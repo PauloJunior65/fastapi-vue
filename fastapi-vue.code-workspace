@@ -17,7 +17,8 @@
 			"**/.github": true,
 			"**/.vscode": true,
 			"**/node_modules": true,
-		}
+		},
+		"debug.terminal.clearBeforeReusing": true
 	},
 	"extensions": {
 		"recommendations": [

@@ -1,9 +1,10 @@
-from sqlalchemy import Table,Boolean, Column, ForeignKey, Integer, BigInteger, String, TIMESTAMP, ForeignKeyConstraint, text
+from sqlalchemy import Table, Boolean, Column, ForeignKey, Integer, BigInteger, String, TIMESTAMP, ForeignKeyConstraint, text
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.associationproxy import association_proxy
 
 Base = declarative_base()
+
 
 class UserGroup(Base):
     __tablename__ = "auth_user_has_group"
@@ -14,8 +15,9 @@ class UserGroup(Base):
         'auth_group.id', ondelete='CASCADE'), primary_key=True)
     group = relationship("Group", back_populates="users")
     user = relationship("User", back_populates="groups")
-    
+
     group_name = association_proxy(target_collection='group', attr='name')
+
 
 class User(Base):
     __tablename__ = "auth_user"
@@ -37,15 +39,16 @@ class User(Base):
         nullable=True,
         server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
     )
-    
+
     groups = relationship("UserGroup", back_populates="user")
+
 
 class Group(Base):
     __tablename__ = "auth_group"
 
     id = Column(Integer, primary_key=True)
     name = Column(String(150), nullable=False)
-    
+
     users = relationship("UserGroup", back_populates="group")
 
 
@@ -63,7 +66,7 @@ class Permission(Base):
     __tablename__ = "auth_permission"
 
     group = Column(String(100), ForeignKey(
-        "auth_permission_group.group",ondelete='CASCADE'), primary_key=True)
+        "auth_permission_group.group", ondelete='CASCADE'), primary_key=True)
     code = Column(String(100), primary_key=True)
     name = Column(String(255), nullable=False)
 
@@ -78,7 +81,7 @@ class GroupPermission(Base):
         'auth_group.id', ondelete='CASCADE'), primary_key=True)
     permission_group = Column(String(100), primary_key=True)
     permission_code = Column(String(100), primary_key=True)
-    
+
     __table_args__ = (
         ForeignKeyConstraint(
             ['permission_group', 'permission_code'],
@@ -86,4 +89,3 @@ class GroupPermission(Base):
             ondelete='CASCADE'
         ),
     )
-
