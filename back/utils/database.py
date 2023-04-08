@@ -5,14 +5,15 @@ from .config import get_settings
 settings = get_settings()
 
 
-def _create_session_database(url: str):
+def _create_session_database(url: str, autocommit: bool = False, autoflush: bool = False):
     engine = create_engine(url)
-    SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    SessionLocal = sessionmaker(
+        autocommit=autocommit, autoflush=autoflush, bind=engine)
     return SessionLocal, engine
 
 
 _session_databases = {name: _create_session_database(
-    url) for name, url in settings.databases.items() if url}
+    **data) for name, data in settings.databases.items() if isinstance(data, dict) and isinstance(data.get("url"), str)}
 
 
 def get_session(name: str = "default"):
@@ -38,7 +39,7 @@ def get_db():
 class DBCustom:
     """Banco de dados customizado"""
 
-    def __init__(self, db: str = "default", url: str = None):
+    def __init__(self, db: str = "default", url: str = None, autocommit: bool = False, autoflush: bool = False):
         """Banco de dados customizado
 
         Args:
@@ -46,7 +47,7 @@ class DBCustom:
             url (str, optional): Url de conexão. se não for informado, será usado o nome da conexão.
         """
         if url is not None:
-            self.db = _create_session_database(url)[0]
+            self.db = _create_session_database(url, autocommit, autoflush)[0]
         else:
             self.db = get_session(db)
         if self.db is None:

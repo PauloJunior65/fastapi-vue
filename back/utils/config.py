@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     CACHE_DB: int = 1
     CACHE_TIMEOUT: int = 300
 
-    DATABASE_URL: str = "mysql+mysqldb://root@localhost/fastapi-vue"
+    DATABASE_URL: str = "mysql+mysqldb://root@localhost/fastapi-vuejs"
 
     DEFAULT_LANGUAGE: str = "pt_BR"
     SUPPORTED_LANGUAGE: Set[str] = set(['pt_BR', 'en'])
@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     @property
     def databases(self):
         return {
-            'default': self.DATABASE_URL,
+            'default': {'url': self.DATABASE_URL},
         }
 
 
