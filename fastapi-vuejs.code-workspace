@@ -13,12 +13,13 @@
 		"editor.formatOnSave": true,
 		"files.exclude": {
 			"**/__pycache__": true,
-			"**/.venv": true,
 			"**/.github": true,
 			"**/.vscode": true,
-			"**/node_modules": true,
+			// "**/.venv": true,
+			// "**/node_modules": true,
 		},
-		"debug.terminal.clearBeforeReusing": true
+		"debug.terminal.clearBeforeReusing": true,
+		"git.ignoreLimitWarning": true
 	},
 	"extensions": {
 		"recommendations": [
@@ -28,11 +29,12 @@
 			"pkief.material-icon-theme",
 			"christian-kohler.path-intellisense",
 			"ms-ceintl.vscode-language-pack-pt-br",
-			"vue.volar",
 			"ms-python.python",
 			"kevinrose.vsc-python-indent",
 			"njpwerner.autodocstring",
-			"visualstudioexptteam.vscodeintellicode"
+			"visualstudioexptteam.vscodeintellicode",
+			"Vue.volar",
+			"Vue.vscode-typescript-vue-plugin",
 		]
 	},
 	"launch": {
