@@ -9,13 +9,14 @@ def cli_app(app: FastAPI):
     import click
     from .translation import cmd_translation, help_translation
     from .users import cmd_users, help_users
+    from .group_perms import cmd_group_perms, help_group_perms
 
     @click.group("cmd",
                  help="\n--------------------------------------\n".join([
-                     help, help_translation, help_users
+                     help, help_translation, help_users, help_group_perms
                  ]))
     def cmd():
-        pass
+        click.clear()
 
     @cmd.command("start", help="Iniciar servidor uvicorn")
     def start():
@@ -29,5 +30,6 @@ def cli_app(app: FastAPI):
 
     cmd_translation(cmd)
     cmd_users(cmd)
+    cmd_group_perms(cmd)
 
     cmd()

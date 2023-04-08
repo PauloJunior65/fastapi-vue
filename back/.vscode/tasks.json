@@ -13,26 +13,39 @@
                 "reveal": "silent",
                 "revealProblems": "onProblem",
                 "close": true
-            },
-            "group": {
-                "kind": "build"
-            },
+            }
         },
         {
-            "label": "Python BUILD",
-            "command": "echo 'BACKEND OK'",
+            "label": "Python: Groups e Permissions",
             "type": "shell",
-            "dependsOn": [
-                "Python: Requirements",
+            "detail": "Sincronizar grupos e permissões",
+            "command": "python3",
+            "args": [
+                "main.py",
+                "sync-groups"
             ],
-            "group": {
-                "kind": "build",
-                "isDefault": true
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "windows": {
+                "command": "python"
             },
             "presentation": {
                 "reveal": "silent",
                 "revealProblems": "onProblem",
                 "close": true
+            }
+        },
+        {
+            "label": "Python BUILD",
+            "dependsOn": [
+                "Python: Requirements",
+                "Python: Groups e Permissions",
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
             },
             "hide": true
         }

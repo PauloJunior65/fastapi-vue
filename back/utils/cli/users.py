@@ -4,14 +4,16 @@ from sqlalchemy import text
 import click
 
 help_users = """
+Manipulação de usuários do sistema:\n
+    - create-admin: Cria um usuário admin\n
+    - create-user: Cria um usuário comum\n
 """
 
 
 def cmd_users(cmd: click.Group):
     @cmd.command(
         "create-admin",
-        help="""Extraia todas as mensagens que foram anotadas usando gettext/_ no diretório especificado.
-        Na primeira vez, será criado um arquivo messages.pot na raiz do diretório.""",
+        help="Cria um usuário admin",
     )
     @click.argument("username", type=str)
     @click.argument("password", type=str)
@@ -27,7 +29,7 @@ def cmd_users(cmd: click.Group):
                     'email': kwargs.get('email', username+'@email.com')
                 })
         click.echo(f"""
-        Usuario criado:
+        Usuario Admin criado:
             username: {username}
             password: {password}
             email: {kwargs.get('email',username+'@email.com')}
@@ -36,8 +38,7 @@ def cmd_users(cmd: click.Group):
 
     @cmd.command(
         "create-user",
-        help="""Extraia todas as mensagens que foram anotadas usando gettext/_ no diretório especificado.
-        Na primeira vez, será criado um arquivo messages.pot na raiz do diretório.""",
+        help="Cria um usuário comum",
     )
     @click.argument("username", type=str)
     @click.argument("password", type=str)
