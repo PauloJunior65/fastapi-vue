@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
+import HelloWorld from './components2/HelloWorld.vue'
 </script>
 
 <template>
@@ -16,7 +16,7 @@ import HelloWorld from './components/HelloWorld.vue'
       </nav>
     </div>
   </header>
-
+  <font-awesome-icon icon="fa-solid fa-user-secret" />
   <RouterView />
 </template>
 
