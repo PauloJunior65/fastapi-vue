@@ -1,5 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../pages/HomePage.vue'
+import PageNotFound from '../pages/PageNotFound.vue'
+import { authStore } from '../stores/auth';
+
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -7,7 +11,20 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: Home
+      component: Home,
+      meta: {
+        auth: false,
+        permissions: [],
+      },
+    },
+    {
+      path: "/:pathMatch(.*)*",
+      name: "error",
+      component: PageNotFound,
+      meta: {
+        auth: false,
+        permissions: [],
+      },
     },
     // {
     //   path: '/about',
@@ -18,6 +35,27 @@ const router = createRouter({
     //   component: () => import('../views/AboutView.vue')
     // }
   ]
-})
+});
+
+router.beforeEach((to, from, next) => {
+  const store = authStore();
+  let auth = store.is_auth();
+  let perm = store.perms(to.meta.perm)
+  if (to.name == "login" && auth) {
+    next({ name: "home" });
+  } else if (to.meta.auth && !auth) {
+    next({ name: "login" });
+  } else if (to.meta.auth && !perm) {
+    next({
+      name: "error",
+      params: {
+        pathMatch: to.path.substring(1).split("/"),
+      },
+      state: {
+        code: 403
+      }
+    });
+  } else next();
+});
 
 export default router

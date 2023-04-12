@@ -82,15 +82,23 @@ import NavLink from '../components/NavLink.vue'
 
 export default defineComponent({
   props: {
-    title: String,
+    title: {
+      type: String,
+      default: ''
+    },
   },
-
   components: {
     ApplicationMark,
     Dropdown,
     NavLink
   },
-
+  mounted() {
+    // Adicionar o titulo da pagina
+    if (this.title.length > 0) {
+      document.title = import.meta.env.VITE_TITLE + " | " + this.title;
+    } else document.title = import.meta.env.VITE_TITLE;
+    document.documentElement.setAttribute("lang", this.$i18n.locale.replace("_", "-"));
+  },
   data() {
     return {
 
