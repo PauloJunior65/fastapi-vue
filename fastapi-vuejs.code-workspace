@@ -44,7 +44,8 @@
 			{
 				"name": "APP RUN",
 				"configurations": [
-					"Python: FastAPI"
+					"Python: FastAPI",
+					"Node: Vue.js"
 				],
 				"stopAll": true,
 				"presentation": {
