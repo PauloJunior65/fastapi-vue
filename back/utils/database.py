@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from .config import get_settings
+from pydantic import BaseModel, EmailStr
+from pydantic.utils import GetterDict
 
 settings = get_settings()
 
@@ -71,3 +73,8 @@ def covert_to_dict(obj):
 def covert_to_dict_list(obj):
     """Convert list object SQLAlchemy to list dict"""
     return list(map(covert_to_dict, obj))
+
+
+def inline_model(name: str, fields: dict = {}) -> BaseModel:
+    serializer_class = type(name, (BaseModel,), fields)
+    return serializer_class
