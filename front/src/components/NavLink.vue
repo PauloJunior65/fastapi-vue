@@ -1,28 +1,20 @@
 <template>
   <li class="nav-item">
-    <Link :href="href" :class="classes">
+    <router-link class="nav-link" active-class="active font-weight-bolder" :to="{ name: name }">
       <slot></slot>
-    </Link>
+    </router-link>
   </li>
 </template>
 
 <script>
-  import { defineComponent } from 'vue'
-  import { Link } from '@inertiajs/inertia-vue3'
+import { defineComponent } from 'vue'
 
-  export default defineComponent({
-    components: {
-      Link,
-    },
-    
-    props: ['href', 'active'],
-
-    computed: {
-      classes() {
-        return this.active
-            ? 'nav-link active font-weight-bolder'
-            : 'nav-link'
-      }
+export default defineComponent({
+  props: {
+    name: {
+      type: String,
+      required: true
     }
-  })
+  },
+})
 </script>

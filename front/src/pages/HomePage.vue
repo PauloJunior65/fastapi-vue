@@ -5,19 +5,19 @@
         Dashboard
       </h2>
     </template>
+    <font-awesome-icon icon="fa-solid fa-user-secret" />
     <welcome />
   </app-layout>
 </template>
 
 <script>
 import { defineComponent } from "vue"
-import AppLayout from "@/Layouts/AppLayout.vue"
-import Welcome from "@/Components/Welcome.vue"
+import Welcome from "../components/Welcome.vue"
 
 export default defineComponent({
   components: {
-    AppLayout,
     Welcome
   }
 });
 </script>
+  
