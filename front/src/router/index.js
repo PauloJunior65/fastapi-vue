@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { authStore } from '../stores/auth'
+
 import Home from '../pages/HomePage.vue'
 import PageNotFound from '../pages/PageNotFound.vue'
-import { authStore } from '../stores/auth';
-
-
+import Login from '../pages/Auth/LoginUser.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -13,7 +13,7 @@ const router = createRouter({
       name: 'home',
       component: Home,
       meta: {
-        auth: false,
+        auth: true,
         permissions: [],
       },
     },
@@ -21,6 +21,15 @@ const router = createRouter({
       path: "/:pathMatch(.*)*",
       name: "error",
       component: PageNotFound,
+      meta: {
+        auth: false,
+        permissions: [],
+      },
+    },
+    {
+      path: "/login",
+      name: "login",
+      component: Login,
       meta: {
         auth: false,
         permissions: [],
@@ -39,8 +48,8 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   const store = authStore();
-  let auth = store.is_auth();
-  let perm = store.perms(to.meta.perm)
+  let auth = store.auth;
+  let perm = store.perms(to.meta.perm || [])
   if (to.name == "login" && auth) {
     next({ name: "home" });
   } else if (to.meta.auth && !auth) {

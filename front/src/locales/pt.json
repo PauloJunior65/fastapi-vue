@@ -3,5 +3,7 @@
     "500": ""
   },
   "error.back": "Dashboard",
-  "error.reload": "Recarregar"
+  "error.reload": "Recarregar",
+  "login.username": "Nome de usuário",
+  "login.password": "Senha"
 }

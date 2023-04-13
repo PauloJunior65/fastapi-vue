@@ -1,4 +1,6 @@
 {
   "error.back": "Dashboard",
-  "error.reload": "Recharge"
+  "error.reload": "Recharge",
+  "login.username": "User name",
+  "login.password": "Password"
 }
