@@ -14,7 +14,7 @@
 		"files.exclude": {
 			"**/__pycache__": true,
 			"**/.github": true,
-			"**/.vscode": true,
+			// "**/.vscode": true,
 			// "**/.venv": true,
 			// "**/node_modules": true,
 		},
@@ -59,8 +59,10 @@
 				],
 				"stopAll": true,
 				"presentation": {
-					"order": 1,
-				},
+					"hidden": false,
+					"group": "APP",
+					"order": 1
+				}
 			}
 		]
 	},

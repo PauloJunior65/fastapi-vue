@@ -15,7 +15,12 @@
             "console": "integratedTerminal",
             "jinja": true,
             "justMyCode": true,
-            "preLaunchTask": "Python BUILD"
+            "preLaunchTask": "Python BUILD",
+            "presentation": {
+                "hidden": false,
+                "group": "back",
+                "order": 1
+            }
         },
     ]
 }
