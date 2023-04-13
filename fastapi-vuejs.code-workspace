@@ -19,7 +19,16 @@
 			// "**/node_modules": true,
 		},
 		"debug.terminal.clearBeforeReusing": true,
-		"git.ignoreLimitWarning": true
+		"git.ignoreLimitWarning": true,
+		"i18n-ally.keystyle": "flat",
+		"i18n-ally.fullReloadOnChanged": true,
+		"i18n-ally.localesPaths": [
+			"lang",
+			"src/locales"
+		],
+		"i18n-ally.sourceLanguage": "pt",
+		"i18n-ally.translate.deepl.useFreeApiEntry": true,
+		"i18n-ally.extract.autoDetect": true,
 	},
 	"extensions": {
 		"recommendations": [
@@ -33,8 +42,9 @@
 			"kevinrose.vsc-python-indent",
 			"njpwerner.autodocstring",
 			"visualstudioexptteam.vscodeintellicode",
-			"Vue.volar",
-			"Vue.vscode-typescript-vue-plugin",
+			"vue.volar",
+			"vue.vscode-typescript-vue-plugin",
+			"lokalise.i18n-ally"
 		]
 	},
 	"launch": {

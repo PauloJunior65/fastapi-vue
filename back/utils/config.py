@@ -17,8 +17,8 @@ class Settings(BaseSettings):
 
     DATABASE_URL: str = "mysql+mysqldb://root@localhost/fastapi-vuejs"
 
-    DEFAULT_LANGUAGE: str = "pt_BR"
-    SUPPORTED_LANGUAGE: Set[str] = set(['pt_BR', 'en'])
+    DEFAULT_LANGUAGE: str = "pt"
+    SUPPORTED_LANGUAGE: Set[str] = set(['pt', 'en'])
 
     class Config:
         env_file = ".env"

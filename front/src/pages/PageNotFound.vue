@@ -39,23 +39,23 @@ export default defineComponent({
     data() {
         let code = (history.state.code != undefined) ? history.state.code : 404;
         let mesage = history.state.mesage || "";
-        document.title = import.meta.env.VITE_TITLE + " | Error " + code;
-        //   if (mesage == "") {
-        //     switch (code) {
-        //       case 500:
-        //         mesage = this.$t("error.500");
-        //         break;
-        //       case 403:
-        //         mesage = this.$t("error.403");
-        //         break;
-        //       case 0:
-        //         mesage = this.$t("error.0");
-        //         break;
-        //       default:
-        //         mesage = this.$t("error.404");
-        //         break;
-        //     }
-        //   }
+        document.title = `${import.meta.env.VITE_TITLE} | ${code}`;
+        if (mesage == "") {
+            switch (code) {
+                case 500:
+                    mesage = this.$t("error.500");
+                    break;
+                case 403:
+                    mesage = this.$t("error.403");
+                    break;
+                case 0:
+                    mesage = this.$t("error.0");
+                    break;
+                default:
+                    mesage = this.$t("error.404");
+                    break;
+            }
+        }
         return {
             code: code,
             mesage: mesage,
