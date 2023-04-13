@@ -21,7 +21,8 @@ def cli_app(app: FastAPI):
     @cmd.command("start", help="Iniciar servidor uvicorn")
     def start():
         import uvicorn
-        uvicorn.run(app, host="127.0.0.1", port=8001)
+        uvicorn.run("main:app", host="127.0.0.1", port=8001, reload=True)
+        # uvicorn.run(app, host="127.0.0.1", port=8001)
 
     @cmd.command("start-server", help="Iniciar servidor uvicorn com acesso externo")
     def start_server():

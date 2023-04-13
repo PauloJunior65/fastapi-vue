@@ -73,8 +73,3 @@ def covert_to_dict(obj):
 def covert_to_dict_list(obj):
     """Convert list object SQLAlchemy to list dict"""
     return list(map(covert_to_dict, obj))
-
-
-def inline_model(name: str, fields: dict = {}) -> BaseModel:
-    serializer_class = type(name, (BaseModel,), fields)
-    return serializer_class

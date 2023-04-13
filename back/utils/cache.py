@@ -2,6 +2,11 @@ from .config import get_settings
 import pickle
 import redis
 
+from typing import TypeVar
+
+_T = TypeVar("_T")
+_VT = TypeVar("_VT")
+
 settings = get_settings()
 
 
@@ -21,6 +26,7 @@ def _hidrate_cache(host: str = "127.0.0.1", port: int = 6379, username: str = No
             'db': db
         }
 
+
 _caches = {k: _hidrate_cache(**v) for k, v in settings.caches.items()}
 
 
@@ -39,7 +45,7 @@ def get_cache():
 class CacheCustom:
     """Cache personalizado"""
 
-    def __init__(self, con:str='default', db: int = None,params:dict=None):
+    def __init__(self, con: str = 'default', db: int = None, params: dict = None):
         """Cache personalizado
 
         Args:
@@ -50,7 +56,7 @@ class CacheCustom:
         if params is not None:
             self.con = _hidrate_cache(**params)
         else:
-            self.con = _caches.get(con,{}).copy()
+            self.con = _caches.get(con, {}).copy()
             if not self.con:
                 raise ValueError(f"Cache {con} not found")
         if db is not None:
@@ -107,7 +113,7 @@ class Cache:
         value = self._serializer.dumps(value)
         return bool(self._cache.set(key, value, ex=timeout, nx=True))
 
-    def get(self, key: str, default=None):
+    def get(self, key: str, default: _VT | _T = None) -> _VT | _T:
         """Retorna um valor do cache
 
         Args:
@@ -131,7 +137,7 @@ class Cache:
         value = self._serializer.dumps(value)
         self._cache.set(key, value, ex=timeout)
 
-    def get_or_set(self, key: str, default, timeout: int = settings.CACHE_TIMEOUT):
+    def get_or_set(self, key: str, default: _VT | _T, timeout: int = settings.CACHE_TIMEOUT) -> _VT | _T:
         """Retorna um valor do cache ou adiciona um valor padrão
 
         Args:

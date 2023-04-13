@@ -6,7 +6,10 @@ from functools import lru_cache
 class Settings(BaseSettings):
     SECRET_KEY: str = ""
     ALGORITHM: str = ""
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 0
+
+    AUTH_MODE: str = "static"  # db, cache, static
+    AUTH_CACHE_TIMEOUT_MINUTES: int = 5
+    AUTH_TOKEN_EXPIRE_MINUTES: int = 30
 
     CACHE_HOST: str = "127.0.0.1"
     CACHE_PORT: int = 6379

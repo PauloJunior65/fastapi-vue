@@ -17,23 +17,27 @@ def cmd_users(cmd: click.Group):
     )
     @click.argument("username", type=str)
     @click.argument("password", type=str)
-    @click.option("--email", type=str, default=None)
-    @click.option("--name", type=str, default=None)
+    @click.option("--email", required=False, type=str)
+    @click.option("--name", required=False, type=str)
     def admin(username: str, password: str, **kwargs):
+        name = kwargs.get('name', username)
+        email = kwargs.get('email', username+'@email.com')
+        hash = Auth.get_password_hash(password)
         with get_engine().connect() as db:
             db.execute(
                 text("INSERT INTO `auth_user` (`username`, `password`, `name`, `email`, `is_active`, `is_superuser`) VALUES (:username, :password, :name, :email, 1, 1)"), {
                     'username': username,
-                    'password': Auth.get_password_hash(password),
-                    'name': kwargs.get('name', username),
-                    'email': kwargs.get('email', username+'@email.com')
+                    'password': hash,
+                    'name': {name if name else username},
+                    'email': email if email else username+'@email.com'
                 })
+            db.commit()
         click.echo(f"""
         Usuario Admin criado:
             username: {username}
-            password: {password}
-            email: {kwargs.get('email',username+'@email.com')}
-            name: {kwargs.get('name',username)}
+            password: {password} (hash: {hash})
+            name: {name if name else username}
+            email: {email if email else username+'@email.com'}
         """)
 
     @cmd.command(
@@ -45,18 +49,22 @@ def cmd_users(cmd: click.Group):
     @click.option("--email", type=str, default=None)
     @click.option("--name", type=str, default=None)
     def user(username: str, password: str, **kwargs):
+        name = kwargs.get('name', username)
+        email = kwargs.get('email', username+'@email.com')
+        hash = Auth.get_password_hash(password)
         with get_engine().connect() as db:
             db.execute(
                 text("INSERT INTO `auth_user` (`username`, `password`, `name`, `email`, `is_active`, `is_superuser`) VALUES (:username, :password, :name, :email, 1, 0)"), {
                     'username': username,
                     'password': Auth.get_password_hash(password),
-                    'name': kwargs.get('name', username),
-                    'email': kwargs.get('email', username+'@email.com')
+                    'name': {name if name else username},
+                    'email': email if email else username+'@email.com'
                 })
+            db.commit()
         click.echo(f"""
         Usuario criado:
             username: {username}
-            password: {password}
-            email: {kwargs.get('email',username+'@email.com')}
-            name: {kwargs.get('name',username)}
+            password: {password} (hash: {hash})
+            name: {name if name else username}
+            email: {email if email else username+'@email.com'}
         """)

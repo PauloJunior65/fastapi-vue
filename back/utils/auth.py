@@ -2,16 +2,56 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt
+from jose import JWTError, jwt, ExpiredSignatureError
 from passlib.context import CryptContext
 from .config import get_settings
 from models.auth import User
 from sqlalchemy.orm import joinedload
-from fastapi_babel import _
 from typing import List, Any
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from pydantic.utils import GetterDict
+from fastapi_babel import _
+from sqlalchemy import text
+from .cache import Cache, get_cache
+from .database import get_db
+
+
+def exceptions(name: str):
+    """Exceptions for auth
+
+    Args:
+        name (str): Code of exception, can be: is_active, isvalid, expired, permission, invalid
+
+    Returns:
+        HTTPException: Exception
+    """
+    raise {
+        'is_active': HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=_("Usuário inativo"),
+            headers={"WWW-Authenticate": "Bearer"},
+        ),
+        'isvalid': HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=_("Usuário ou senha inválidos"),
+            headers={"WWW-Authenticate": "Bearer"},
+        ),
+        'expired': HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=_("Token expirado"),
+            headers={"WWW-Authenticate": "Bearer"},
+        ),
+        'permission': HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=_("Você não tem permissão para esta ação"),
+        )
+    }.get(name, HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=_("Não foi possível validar as credenciais"),
+        headers={"WWW-Authenticate": "Bearer"},
+    ))
+
 
 settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -54,16 +94,16 @@ class Auth(BaseModel):
 
     @property
     def token_fields(self):
-        return ['id', 'username', 'password', 'name', 'is_superuser', 'permissions']
+        if settings.AUTH_MODE in ['db', 'cache']:
+            return ['id']
+        return list(self.__fields__.keys())
 
     def check_permission(self, permission: str):
         if self.is_superuser or \
             (isinstance(permission, str) and permission in self.permissions) or \
                 (isinstance(permission, list) and any(p in self.permissions for p in permission)):
             return
-        raise HTTPException(
-            status_code=403,
-            detail=_("You dont have permission to this action."))
+        exceptions('permission')
 
     def verify_password(self, password: str, hashed_password: str = None):
         """Verifica se a senha é valida
@@ -89,20 +129,18 @@ class Auth(BaseModel):
         """
         return pwd_context.hash(password)
 
-    def create_token(self, expires_delta: timedelta = None):
-        data = {key: value for key,
-                value in self.dict() if key in self.token_fields}
-        if expires_delta:
-            expire = datetime.utcnow() + expires_delta
-        else:
-            expire = datetime.utcnow() + timedelta(minutes=15)
+    def create_token(self, expires_delta: int = settings.AUTH_TOKEN_EXPIRE_MINUTES, with_exp: bool = True):
+        data = {key: getattr(self, key) for key in self.token_fields}
+        expire = datetime.utcnow() + timedelta(minutes=expires_delta)
         data.update({"exp": expire})
         encoded_jwt = jwt.encode(
             data, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+        if with_exp:
+            return encoded_jwt, expire
         return encoded_jwt
 
     @staticmethod
-    def authenticate(db: Session, username: str, password: str):
+    def authenticate(db: Session, username: str, password: str, cache: Cache = None):
         """_summary_
 
         Args:
@@ -120,62 +158,112 @@ class Auth(BaseModel):
             User.username == username).first()
         if user and pwd_context.verify(password, user.password):
             if user.is_active == False:
-                raise HTTPException(status_code=400, detail="Inactive user")
-            permissions = []
-            for item in db.execute("SELECT CONCAT(p.permission_group,'.',p.permission_code) AS perm FROM `auth_user_has_group` AS u JOIN auth_group AS g ON g.id = u.group_id LEFT JOIN auth_group_has_permission AS p ON g.id = p.group_id WHERE u.user_id = :id;", {'id': user.id}).fetchall():
-                permissions.append(item['perm'])
+                exceptions('is_active')
+            permissions = [item['perm'] for item in db.execute(text("SELECT CONCAT(p.permission_group,'.',p.permission_code) AS perm FROM `auth_user_has_group` AS u JOIN auth_group AS g ON g.id = u.group_id LEFT JOIN auth_group_has_permission AS p ON g.id = p.group_id WHERE u.user_id = :id;"), {
+                'id': user.id}).fetchall()]
             setattr(user, 'permissions', permissions)
-            return Auth.from_orm(user)
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=_("Incorrect username or password"),
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+            user = Auth.from_orm(user)
+            if settings.AUTH_MODE == 'cache' and cache is not None:
+                cache.set(f"USER:{user.id}", user,
+                          settings.AUTH_CACHE_TIMEOUT_MINUTES * 60)
+            return user
+        exceptions('isvalid')
 
     @staticmethod
-    def load_payload(payload: dict):
-        data = dict()
-        for i in Auth.token_fields:
-            if i not in payload.keys():
+    def find_id(db: Session, id: int):
+        user = db.query(User).options(joinedload(User.groups)).filter(
+            User.id == id).first()
+        if user:
+            permissions = [item['perm'] for item in db.execute(text("SELECT CONCAT(p.permission_group,'.',p.permission_code) AS perm FROM `auth_user_has_group` AS u JOIN auth_group AS g ON g.id = u.group_id LEFT JOIN auth_group_has_permission AS p ON g.id = p.group_id WHERE u.user_id = :id;"), {
+                'id': user.id}).fetchall()]
+            setattr(user, 'permissions', permissions)
+            return Auth.from_orm(user)
+        return None
+
+    @staticmethod
+    def load_payload(payload: dict, db: Session = None, cache: Cache = None):
+        if settings.AUTH_MODE == 'db' and db is not None:
+            auth = Auth.find_id(db, payload.get('id', 0))
+            if auth is not None and auth.is_active == False:
                 return None
-            data[i] = payload.get(i)
-        return Auth(**data)
+            return auth
+        elif settings.AUTH_MODE == 'cache' and cache is not None:
+            auth: Auth = cache.get(f"USER:{payload.get('id', 0)}")
+            if auth is None and db is not None:
+                auth = Auth.find_id(db, payload.get('id', 0))
+                if auth is not None:
+                    cache.set(f"USER:{auth.id}", auth,
+                              settings.AUTH_CACHE_TIMEOUT_MINUTES * 60)
+            if auth is not None and auth.is_active == False:
+                return None
+            return auth
+        elif settings.AUTH_MODE == 'static':
+            data = dict()
+            for i in Auth.token_fields:
+                if i not in payload.keys():
+                    return None
+                data[i] = payload.get(i)
+            return Auth(**data)
+        return None
+
+    def reload(self, db: Session, cache: Cache = None):
+        if settings.AUTH_MODE == 'static':
+            auth = Auth.find_id(db, self.id)
+            if auth is not None:
+                if auth.is_active == False:
+                    exceptions('is_active')
+                self.__dict__.update(auth.__dict__)
+        return self
 
 
-class CurrentUser:
-    """Classe para verificar se o usuario esta """
+if settings.AUTH_MODE == 'cache':
+    class CurrentUser:
+        """Classe para verificar se o usuario esta """
 
-    def __init__(self, permissions: list[str] = []):
-        """
+        def __init__(self, permissions: list[str] = []):
+            """
 
-        Args:
-            permissions (list[str], optional): _description_. Defaults to [].
-        """
-        self.permissions = permissions
+            Args:
+                permissions (list[str], optional): _description_. Defaults to [].
+            """
+            self.permissions = permissions
 
-    async def __call__(self, token: str = Depends(oauth2_scheme)):
-        return _check_token(token, self.permissions)
+        async def __call__(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db), cache: Cache = Depends(get_cache)) -> Auth:
+            return _check_token(token, self.permissions, db, cache)
+
+    async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db), cache: Cache = Depends(get_cache)) -> Auth:
+        return _check_token(token, db=db, cache=cache)
+else:
+    class CurrentUser:
+        """Classe para verificar se o usuario esta """
+
+        def __init__(self, permissions: list[str] = []):
+            """
+
+            Args:
+                permissions (list[str], optional): _description_. Defaults to [].
+            """
+            self.permissions = permissions
+
+        async def __call__(self, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Auth:
+            return _check_token(token, self.permissions, db)
+
+    async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> Auth:
+        return _check_token(token, db=db)
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
-    return _check_token(token)
-
-
-def _check_token(token: str, permissions: list = []):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=_("Não foi possível validar as credenciais"),
-        headers={"WWW-Authenticate": "Bearer"},
-    )
+def _check_token(token: str, permissions: list = [], db: Session = None, cache: Cache = None) -> Auth:
     try:
         # Le o token e verifica se é valido
         payload: dict = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user = Auth.load_payload(payload)
+        user = Auth.load_payload(payload, db, cache)
         if user is None:
-            raise credentials_exception
+            exceptions('invalid')
         if permissions:
             user.check_permission(permissions)
         return user
+    except ExpiredSignatureError:
+        exceptions('expired')
     except JWTError:
-        raise credentials_exception
+        exceptions('invalid')
