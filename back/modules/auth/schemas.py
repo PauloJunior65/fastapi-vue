@@ -21,5 +21,5 @@ class Login(BaseModel):
 class LoginResponse(BaseModel):
     access_token: str
     token_type: str
-    exp: datetime = None
+    expire: datetime = None
     user: UserView

@@ -1,8 +1,10 @@
 import axios from "axios";
+import exceptions from "./exceptions";
 import { authStore } from './stores/auth';
-const store = authStore();
+
 
 function api({ auth = true, download = false } = {}) {
+    const store = authStore();
     let lang = localStorage.getItem('lang') || import.meta.env.VITE_I18N_LOCALE || 'en';
     let config = {
         baseURL: import.meta.env.VITE_API,
@@ -15,3 +17,4 @@ function api({ auth = true, download = false } = {}) {
     return axios.create(config);
 }
 export default api;
+export { api, exceptions };

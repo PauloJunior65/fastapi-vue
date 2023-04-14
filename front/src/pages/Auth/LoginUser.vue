@@ -31,7 +31,7 @@
               <div v-show="loading" class="spinner-border spinner-border-sm" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
-              Entrar
+              {{ $t('login.login') }}
             </jet-button>
           </div>
         </div>
@@ -48,6 +48,9 @@ import JetButton from '@/components/Button.vue'
 import JetInput from '@/components/Input.vue'
 import JetLabel from '@/components/Label.vue'
 import LangChange from '@/components/LangChange.vue'
+import { authStore } from '../../stores/auth';
+import { mapState, mapActions } from 'pinia';
+import exceptions from "../../exceptions";
 
 export default defineComponent({
   components: {
@@ -66,10 +69,21 @@ export default defineComponent({
       loading: false
     }
   },
-
+  computed: {
+    ...mapState(authStore, ['auth']),
+  },
+  mounted() {
+    document.title = import.meta.env.VITE_TITLE + " | " + this.$t('login.login');
+  },
   methods: {
-    submit() {
-
+    ...mapActions(authStore, ['login']),
+    async submit() {
+      this.status = '';
+      try {
+        await this.login(this.username, this.password);
+      } catch (error) {
+        if (exceptions({ ...error, codeIgnore: [401] })) return;
+      }
     }
   }
 })

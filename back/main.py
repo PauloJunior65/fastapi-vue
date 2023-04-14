@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from utils.middleware import add_middlewares

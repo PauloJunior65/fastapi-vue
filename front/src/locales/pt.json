@@ -5,5 +5,7 @@
   "error.back": "Dashboard",
   "error.reload": "Recarregar",
   "login.username": "Nome de usuário",
-  "login.password": "Senha"
+  "login.password": "Senha",
+  "login.login": "Entrar",
+  "error.err": "Codigo"
 }

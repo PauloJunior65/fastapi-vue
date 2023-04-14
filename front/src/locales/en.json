@@ -2,5 +2,7 @@
   "error.back": "Dashboard",
   "error.reload": "Recharge",
   "login.username": "User name",
-  "login.password": "Password"
+  "login.password": "Password",
+  "login.login": "To enter",
+  "error.err": "Code"
 }
