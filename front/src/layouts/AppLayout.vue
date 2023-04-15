@@ -79,6 +79,8 @@ import { defineComponent } from "vue"
 import ApplicationMark from '../components/ApplicationMark.vue'
 import Dropdown from '../components/Dropdown.vue'
 import NavLink from '../components/NavLink.vue'
+import { authStore } from "../stores/auth"
+import { mapActions } from "pinia";
 
 export default defineComponent({
   props: {
@@ -108,9 +110,7 @@ export default defineComponent({
 
   },
   methods: {
-    logout() {
-
-    },
+    ...mapActions(authStore, ['logout']),
   },
 });
 </script>

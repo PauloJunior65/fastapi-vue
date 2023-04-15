@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import moment from "moment";
 import axios from 'axios';
+import { sharedStore } from './shared';
 // import api from '../api';
 
 
@@ -43,21 +44,23 @@ export const authStore = defineStore('auth', {
     },
     actions: {
         async login(username, password) {
+            console.log(username, password);
             let lang = localStorage.getItem('lang') || import.meta.env.VITE_I18N_LOCALE || 'en';
-            let res = await axios.post('/auth/token', {
+            let res = await axios.post('/token', {
                 username: username,
                 password: password
             }, {
                 baseURL: import.meta.env.VITE_API,
                 headers: {
-                    "Accept-Language": lang.replace("_", "-")
+                    "Accept-Language": lang.replace("_", "-"),
+                    'content-type': 'application/x-www-form-urlencoded'
                 },
             });
             this.loadData(res.data);
         },
         async refresh() {
             let lang = localStorage.getItem('lang') || import.meta.env.VITE_I18N_LOCALE || 'en';
-            let res = await axios.get('/auth/refresh', {
+            let res = await axios.get('/refresh', {
                 baseURL: import.meta.env.VITE_API,
                 headers: {
                     "Accept-Language": lang.replace("_", "-"),
@@ -79,6 +82,8 @@ export const authStore = defineStore('auth', {
         },
         logout() {
             this.$reset();
+            const store = sharedStore();
+            store.replace('login');
         }
     },
     persist: true,

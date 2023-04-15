@@ -81,6 +81,7 @@ export default defineComponent({
       this.status = '';
       try {
         await this.login(this.username, this.password);
+        this.$router.push({ name: 'home' });
       } catch (error) {
         if (!exceptions({ ...error, codeIgnore: [401] })) this.status = error_mensage(error);
       }

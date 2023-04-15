@@ -3,10 +3,12 @@ from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from utils.middleware import add_middlewares
 from modules import add_routers
+from utils.auth import add_auth
 from fastapi.responses import JSONResponse
 
 app = FastAPI(swagger_ui_parameters={"defaultModelsExpandDepth": -1})
 add_middlewares(app)
+add_auth(app)
 add_routers(app)
 
 

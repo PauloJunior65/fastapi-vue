@@ -1,20 +1,23 @@
 from datetime import datetime, timedelta
-from sqlalchemy.orm import Session
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-from jose import JWTError, jwt, ExpiredSignatureError
-from passlib.context import CryptContext
-from .config import get_settings
-from models.auth import User
-from sqlalchemy.orm import joinedload
-from typing import List, Any
-from pydantic import BaseModel, EmailStr
-from datetime import datetime
-from pydantic.utils import GetterDict
+from typing import Annotated, Any, List
+
+from fastapi import Depends, FastAPI, Request, status
+from fastapi.encoders import jsonable_encoder
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_babel import _
+from jose import ExpiredSignatureError, JWTError, jwt
+from passlib.context import CryptContext
+from pydantic import BaseModel, EmailStr
+from pydantic.utils import GetterDict
 from sqlalchemy import text
+from sqlalchemy.orm import Session, joinedload
+
+from models.auth import User
+
 from .cache import Cache, get_cache
+from .config import get_settings
 from .database import get_db
+from .helper import exception
 
 
 def exceptions(name: str):
@@ -26,31 +29,15 @@ def exceptions(name: str):
     Returns:
         HTTPException: Exception
     """
-    raise {
-        'is_active': HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=_("Usuário inativo"),
-            headers={"WWW-Authenticate": "Bearer"},
-        ),
-        'isvalid': HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=_("Usuário ou senha inválidos"),
-            headers={"WWW-Authenticate": "Bearer"},
-        ),
-        'expired': HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=_("Token expirado"),
-            headers={"WWW-Authenticate": "Bearer"},
-        ),
-        'permission': HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=_("Você não tem permissão para esta ação"),
-        )
-    }.get(name, HTTPException(
+    exception(
+        mensagem={
+            'is_active': _("Usuário inativo"),
+            'isvalid': _("Usuário ou senha inválidos"),
+            'expired': _("Token expirado"),
+            'permission': _("Você não tem permissão para esta ação")
+        }.get(name, _("Não foi possível validar as credenciais")),
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail=_("Não foi possível validar as credenciais"),
-        headers={"WWW-Authenticate": "Bearer"},
-    ))
+        headers={"WWW-Authenticate": "Bearer"})
 
 
 settings = get_settings()
@@ -93,10 +80,10 @@ class Auth(BaseModel):
         orm_mode = True
 
     @property
-    def token_fields(self):
+    def token_data(self) -> dict:
         if settings.AUTH_MODE in ['db', 'cache']:
-            return ['id']
-        return list(self.__fields__.keys())
+            return jsonable_encoder(self, include=['id'])
+        return jsonable_encoder(self, exclude_none=True)
 
     def check_permission(self, permission: str):
         if self.is_superuser or \
@@ -105,6 +92,7 @@ class Auth(BaseModel):
             return
         exceptions('permission')
 
+    @classmethod
     def verify_password(self, password: str, hashed_password: str = None):
         """Verifica se a senha é valida
 
@@ -130,7 +118,7 @@ class Auth(BaseModel):
         return pwd_context.hash(password)
 
     def create_token(self, expires_delta: int = settings.AUTH_TOKEN_EXPIRE_MINUTES, with_exp: bool = True):
-        data = {key: getattr(self, key) for key in self.token_fields}
+        data = self.token_data
         expire = datetime.utcnow() + timedelta(minutes=expires_delta)
         data.update({"exp": expire})
         encoded_jwt = jwt.encode(
@@ -139,8 +127,8 @@ class Auth(BaseModel):
             return encoded_jwt, expire
         return encoded_jwt
 
-    @staticmethod
-    def authenticate(db: Session, username: str, password: str, cache: Cache = None):
+    @classmethod
+    def authenticate(self, db: Session, username: str, password: str, cache: Cache = None):
         """_summary_
 
         Args:
@@ -156,12 +144,10 @@ class Auth(BaseModel):
         """
         user = db.query(User).options(joinedload(User.groups)).filter(
             User.username == username).first()
-        if user and pwd_context.verify(password, user.password):
+        if isinstance(user, User) and pwd_context.verify(password, user.password):
             if user.is_active == False:
                 exceptions('is_active')
-            permissions = [item['perm'] for item in db.execute(text("SELECT CONCAT(p.permission_group,'.',p.permission_code) AS perm FROM `auth_user_has_group` AS u JOIN auth_group AS g ON g.id = u.group_id LEFT JOIN auth_group_has_permission AS p ON g.id = p.group_id WHERE u.user_id = :id;"), {
-                'id': user.id}).fetchall()]
-            setattr(user, 'permissions', permissions)
+            self._set_permissions(db, user)
             user = Auth.from_orm(user)
             if settings.AUTH_MODE == 'cache' and cache is not None:
                 cache.set(f"USER:{user.id}", user,
@@ -169,19 +155,26 @@ class Auth(BaseModel):
             return user
         exceptions('isvalid')
 
-    @staticmethod
-    def find_id(db: Session, id: int):
+    @classmethod
+    def find_id(self, db: Session, id: int):
         user = db.query(User).options(joinedload(User.groups)).filter(
             User.id == id).first()
         if user:
-            permissions = [item['perm'] for item in db.execute(text("SELECT CONCAT(p.permission_group,'.',p.permission_code) AS perm FROM `auth_user_has_group` AS u JOIN auth_group AS g ON g.id = u.group_id LEFT JOIN auth_group_has_permission AS p ON g.id = p.group_id WHERE u.user_id = :id;"), {
-                'id': user.id}).fetchall()]
-            setattr(user, 'permissions', permissions)
+            self._set_permissions(db, user)
             return Auth.from_orm(user)
         return None
 
-    @staticmethod
-    def load_payload(payload: dict, db: Session = None, cache: Cache = None):
+    @classmethod
+    def _set_permissions(self, db: Session, user: User):
+        permissions = []
+        for item in db.execute(text(
+                f"SELECT CONCAT(p.permission_group,'.',p.permission_code) AS perm FROM `auth_user_has_group` AS u JOIN auth_group AS g ON g.id = u.group_id LEFT JOIN auth_group_has_permission AS p ON g.id = p.group_id WHERE u.user_id = {user.id};")).fetchall():
+            permissions.append(item[0])
+        setattr(user, 'permissions', permissions)
+        return user
+
+    @classmethod
+    def load_payload(self, payload: dict, db: Session = None, cache: Cache = None):
         if settings.AUTH_MODE == 'db' and db is not None:
             auth = Auth.find_id(db, payload.get('id', 0))
             if auth is not None and auth.is_active == False:
@@ -198,11 +191,8 @@ class Auth(BaseModel):
                 return None
             return auth
         elif settings.AUTH_MODE == 'static':
-            data = dict()
-            for i in Auth.token_fields:
-                if i not in payload.keys():
-                    return None
-                data[i] = payload.get(i)
+            data = {i: payload.get(i) for i in set(
+                payload.keys()) & set(Auth.__fields__.keys())}
             return Auth(**data)
         return None
 
@@ -267,3 +257,61 @@ def _check_token(token: str, permissions: list = [], db: Session = None, cache: 
         exceptions('expired')
     except JWTError:
         exceptions('invalid')
+
+
+class UserView(BaseModel):
+    id: int
+    username: str
+    email: str
+    name: str
+    is_superuser: bool = False
+    groups = []
+    permissions: list[str] = []
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str
+    expire: datetime = None
+    user: UserView
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    expire: datetime = None
+
+
+class TokenData(BaseModel):
+    username: str
+    password: str
+
+
+def add_auth(app: FastAPI):
+    if settings.AUTH_MODE == 'cache':
+        @app.post("/token", response_model=LoginResponse, tags=['auth'])
+        async def login(request: Request, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[Session, Depends(get_db)], cache: Annotated[Cache, Depends(get_cache)]):
+            auth = Auth.authenticate(
+                db, form_data.username, form_data.password, cache)
+            token = auth.create_token()
+            return LoginResponse(access_token=token[0], token_type='bearer', expire=token[1], user=auth)
+
+        @app.get("/refresh", response_model=LoginResponse, tags=['auth'])
+        async def refresh(request: Request, auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)], cache: Annotated[Cache, Depends(get_cache)]):
+            auth = auth.reload(db, cache)
+            token = auth.create_token()
+            return LoginResponse(access_token=token[0], token_type='bearer', expire=token[1], user=auth)
+
+    else:
+        @app.post("/token", response_model=LoginResponse, tags=['auth'])
+        async def login(request: Request, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[Session, Depends(get_db)]):
+            auth = Auth.authenticate(
+                db, form_data.username, form_data.password)
+            token = auth.create_token()
+            return LoginResponse(access_token=token[0], token_type='bearer', expire=token[1], user=auth)
+
+        @app.get("/refresh", response_model=LoginResponse, tags=['auth'])
+        async def refresh(request: Request, auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)]):
+            auth = auth.reload(db)
+            token = auth.create_token()
+            return LoginResponse(access_token=token[0], token_type='bearer', expire=token[1], user=auth)
