@@ -5,7 +5,7 @@
     </template>
 
     <div class="card-body">
-      <div v-if="status" class="alert alert-success mb-3 rounded-0" role="alert">
+      <div v-if="status" class="alert alert-danger mb-3 rounded-0" role="alert">
         {{ status }}
       </div>
 
@@ -50,7 +50,7 @@ import JetLabel from '@/components/Label.vue'
 import LangChange from '@/components/LangChange.vue'
 import { authStore } from '../../stores/auth';
 import { mapState, mapActions } from 'pinia';
-import exceptions from "../../exceptions";
+import { exceptions, error_mensage } from "../../exceptions";
 
 export default defineComponent({
   components: {
@@ -82,7 +82,7 @@ export default defineComponent({
       try {
         await this.login(this.username, this.password);
       } catch (error) {
-        if (exceptions({ ...error, codeIgnore: [401] })) return;
+        if (!exceptions({ ...error, codeIgnore: [401] })) this.status = error_mensage(error);
       }
     }
   }

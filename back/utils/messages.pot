@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-04-13 10:17-0400\n"
+"POT-Creation-Date: 2023-04-15 13:44-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -21,19 +21,27 @@ msgstr ""
 msgid "Teste 2"
 msgstr ""
 
-#: utils/auth.py:66
-msgid "You dont have permission to this action."
+#: utils/auth.py:32
+msgid "Usuário inativo"
 msgstr ""
 
-#: utils/auth.py:131
-msgid "Incorrect username or password"
+#: utils/auth.py:37
+msgid "Usuário ou senha inválidos"
 msgstr ""
 
-#: utils/auth.py:167
+#: utils/auth.py:42
+msgid "Token expirado"
+msgstr ""
+
+#: utils/auth.py:47
+msgid "Você não tem permissão para esta ação"
+msgstr ""
+
+#: utils/auth.py:51
 msgid "Não foi possível validar as credenciais"
 msgstr ""
 
-#: utils/helper.py:4
+#: utils/helper.py:5
 msgid "Not found"
 msgstr ""
 

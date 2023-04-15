@@ -1,5 +1,5 @@
 import axios from "axios";
-import exceptions from "./exceptions";
+import { exceptions, error_mensage, error_fields } from "./exceptions";
 import { authStore } from './stores/auth';
 
 
@@ -16,5 +16,6 @@ function api({ auth = true, download = false } = {}) {
     if (download) config["responseType"] = 'blob';
     return axios.create(config);
 }
+
 export default api;
-export { api, exceptions };
+export { api, exceptions, error_mensage, error_fields };

@@ -60,7 +60,7 @@ export default defineComponent({
         };
     },
     mounted() {
-        // this.loadLoop = setInterval(() => this.reset(), 30000);
+        this.loadLoop = setInterval(() => this.reset(), 30000);
     },
     beforeUnmount() {
         if (this.loadLoop != null) clearInterval(this.loadLoop);
