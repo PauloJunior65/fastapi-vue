@@ -1,9 +1,11 @@
 from collections import defaultdict
 from typing import List
+
+from fastapi_babel import _
 from pydantic import BaseModel
 from pydantic.utils import GetterDict
+
 from models.auth import Permission
-from fastapi_babel import _
 
 
 class UserGetter(GetterDict):
@@ -66,3 +68,14 @@ class GroupBase(BaseModel):
     class Config:
         orm_mode = True
         getter_dict = PermissionGetter
+
+
+class GroupCreate(BaseModel):
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class GroupEdit(GroupCreate):
+    id: int

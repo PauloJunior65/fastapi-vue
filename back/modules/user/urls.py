@@ -38,7 +38,7 @@ async def show(id: int, auth: Annotated[Auth, Depends(get_current_user)], db: An
     return db.query(User).options(joinedload(User.groups)).get(id)
 
 
-@router.post("/create", response_model=UserBase, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=UserBase, status_code=status.HTTP_201_CREATED)
 async def create(data: UserCreate, auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)]):
     auth.check_permission("user.add")
     return save_user(db, data.dict())
@@ -57,7 +57,7 @@ def save_user(db: Session, obj: dict, id=None) -> User:
         obj['password'] = Auth.get_password_hash(password)
     if id != None:
         res = db.query(User).filter(User.id == id).update(obj)
-        if not res:
+        if res < 1:
             exception_field("id", _("Usuário não encontrado"))
         db.commit()
     else:
