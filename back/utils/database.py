@@ -1,10 +1,13 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from .config import get_settings
-from pydantic import BaseModel, EmailStr
-from pydantic.utils import GetterDict
 
 settings = get_settings()
+
+if settings.DATABASE_DEBUG:
+    import logging
+    logging.basicConfig()
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 
 def _create_session_database(url: str, autocommit: bool = False, autoflush: bool = False):

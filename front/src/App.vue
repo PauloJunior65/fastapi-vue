@@ -11,6 +11,7 @@ export default defineComponent({
   mounted() {
     const shared = sharedStore();
     shared.$router = this.$router;
+    shared.translation = this.$t;
   },
 });
 </script>

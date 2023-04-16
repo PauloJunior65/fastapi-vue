@@ -5,9 +5,11 @@ from utils.middleware import add_middlewares
 from modules import add_routers
 from utils.auth import add_auth
 from fastapi.responses import JSONResponse
+from fastapi_pagination import add_pagination
 
 app = FastAPI(swagger_ui_parameters={"defaultModelsExpandDepth": -1})
 add_middlewares(app)
+add_pagination(app)
 add_auth(app)
 add_routers(app)
 

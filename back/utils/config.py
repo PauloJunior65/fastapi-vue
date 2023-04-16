@@ -4,6 +4,7 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
+
     SECRET_KEY: str = ""
     ALGORITHM: str = ""
 
@@ -18,6 +19,7 @@ class Settings(BaseSettings):
     CACHE_DB: int = 1
     CACHE_TIMEOUT: int = 300
 
+    DATABASE_DEBUG: bool = False
     DATABASE_URL: str = "mysql+mysqldb://root@localhost/fastapi-vuejs"
 
     DEFAULT_LANGUAGE: str = "pt"

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Annotated, Any, List
 
-from fastapi import Depends, FastAPI, Request, status
+from fastapi import Depends, FastAPI, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi_babel import _
@@ -119,7 +119,10 @@ class Auth(BaseModel):
 
     def create_token(self, expires_delta: int = settings.AUTH_TOKEN_EXPIRE_MINUTES, with_exp: bool = True):
         data = self.token_data
-        expire = datetime.utcnow() + timedelta(minutes=expires_delta)
+        if expires_delta < 0:
+            expire = datetime.utcnow() + timedelta(days=365*20)
+        else:
+            expire = datetime.utcnow() + timedelta(minutes=expires_delta)
         data.update({"exp": expire})
         encoded_jwt = jwt.encode(
             data, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
@@ -290,28 +293,28 @@ class TokenData(BaseModel):
 def add_auth(app: FastAPI):
     if settings.AUTH_MODE == 'cache':
         @app.post("/token", response_model=LoginResponse, tags=['auth'])
-        async def login(request: Request, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[Session, Depends(get_db)], cache: Annotated[Cache, Depends(get_cache)]):
+        async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[Session, Depends(get_db)], cache: Annotated[Cache, Depends(get_cache)]):
             auth = Auth.authenticate(
                 db, form_data.username, form_data.password, cache)
             token = auth.create_token()
             return LoginResponse(access_token=token[0], token_type='bearer', expire=token[1], user=auth)
 
         @app.get("/refresh", response_model=LoginResponse, tags=['auth'])
-        async def refresh(request: Request, auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)], cache: Annotated[Cache, Depends(get_cache)]):
+        async def refresh(auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)], cache: Annotated[Cache, Depends(get_cache)]):
             auth = auth.reload(db, cache)
             token = auth.create_token()
             return LoginResponse(access_token=token[0], token_type='bearer', expire=token[1], user=auth)
 
     else:
         @app.post("/token", response_model=LoginResponse, tags=['auth'])
-        async def login(request: Request, form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[Session, Depends(get_db)]):
+        async def login(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: Annotated[Session, Depends(get_db)]):
             auth = Auth.authenticate(
                 db, form_data.username, form_data.password)
             token = auth.create_token()
             return LoginResponse(access_token=token[0], token_type='bearer', expire=token[1], user=auth)
 
         @app.get("/refresh", response_model=LoginResponse, tags=['auth'])
-        async def refresh(request: Request, auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)]):
+        async def refresh(auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)]):
             auth = auth.reload(db)
             token = auth.create_token()
             return LoginResponse(access_token=token[0], token_type='bearer', expire=token[1], user=auth)

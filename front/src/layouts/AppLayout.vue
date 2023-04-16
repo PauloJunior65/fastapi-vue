@@ -1,6 +1,5 @@
 <template>
   <div>
-
     <nav class="navbar navbar-expand-md navbar-light bg-white border-bottom sticky-top">
       <div class="container-fluid">
         <!-- Logo -->
@@ -11,7 +10,6 @@
           aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <!-- Left Side Of Navbar -->
           <ul class="navbar-nav me-auto">
@@ -19,7 +17,6 @@
               Dashboard
             </NavLink>
           </ul>
-
           <!-- Right Side Of Navbar -->
           <ul class="navbar-nav align-items-baseline">
             <!-- Language -->
@@ -34,7 +31,7 @@
             <!-- Authentication Links -->
             <Dropdown id="settingsDropdown">
               <template #trigger>
-                {{ 'Nome do usuario' }}
+                {{ name }}
               </template>
 
               <template #content>
@@ -80,7 +77,7 @@ import ApplicationMark from '../components/ApplicationMark.vue'
 import Dropdown from '../components/Dropdown.vue'
 import NavLink from '../components/NavLink.vue'
 import { authStore } from "../stores/auth"
-import { mapActions } from "pinia";
+import { mapActions, mapState } from "pinia";
 
 export default defineComponent({
   props: {
@@ -107,7 +104,7 @@ export default defineComponent({
     }
   },
   computed: {
-
+    ...mapState(authStore, ['name'])
   },
   methods: {
     ...mapActions(authStore, ['logout']),

@@ -4,9 +4,13 @@ import { defineStore } from 'pinia';
 export const sharedStore = defineStore('shared', {
     state: () => ({
         $router: null,
+        translation: null
     }),
     getters: {
-
+        $t: (state) => (key) => {
+            if (state.translation == null) return key;
+            return state.translation(key);
+        },
     },
     actions: {
         error(code = 400, message = '') {
