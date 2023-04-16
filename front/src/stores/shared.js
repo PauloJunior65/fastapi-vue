@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia';
 
 
-export const sharedStore = defineStore('shared', {
+export const sharedStore = defineStore('shared-vue', {
     state: () => ({
         $router: null,
-        translation: null
+        translation: null,
+        sizePerPage: 50,
     }),
     getters: {
         $t: (state) => (key) => {

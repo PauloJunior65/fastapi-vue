@@ -22,16 +22,11 @@ export const authStore = defineStore('auth', {
     }),
     getters: {
         auth(state) {
-            return state.id != null && state.access_token.length > 0;
-        },
-        perms: (state) => (perm) => {
-            if (state.auth) {
-                if (state.is_superuser) return true;
-                if (Array.isArray(perm) && perm.length > 0) {
-                    for (let key in perm) if (state.permissions.includes(perm[key])) return true;
-                } else return perm.length == 0 ? true : state.permissions.includes(perm);
+            if (state.expire.length > 0 && moment(state.expire).diff(moment(), 'seconds') <= 0) {
+                this.$reset();
+                return false;
             }
-            return false;
+            return state.id != null && state.access_token.length > 0;
         },
         token(state) {
             if (state.expire.length == 0) return '';
@@ -43,6 +38,15 @@ export const authStore = defineStore('auth', {
         },
     },
     actions: {
+        perms(perm) {
+            if (this.auth) {
+                if (this.is_superuser) return true;
+                if (Array.isArray(perm) && perm.length > 0) {
+                    for (let key in perm) if (this.permissions.includes(perm[key])) return true;
+                } else return perm.length == 0 ? true : this.permissions.includes(perm);
+            }
+            return false;
+        },
         async login(username, password) {
             console.log(username, password);
             let lang = localStorage.getItem('lang') || import.meta.env.VITE_I18N_LOCALE || 'en';

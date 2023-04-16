@@ -1,8 +1,8 @@
 <template>
-  <app-layout title="Dashboard">
+  <app-layout :title="$t('layout.home')">
     <template #header>
       <h2 class="h4 font-weight-bold">
-        Dashboard
+        {{ $t('layout.home') }}
       </h2>
     </template>
     <font-awesome-icon icon="fa-solid fa-user-secret" />

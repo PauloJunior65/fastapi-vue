@@ -17,13 +17,10 @@ router = APIRouter(
 )
 
 
-@router.get("/init", response_model=InitResponse)
+@router.get("/init", response_model=list[GroupBase])
 async def init(auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)]):
     auth.check_permission(["user.view", "user.edit", "user.add"])
-    return {
-        'groups': db.query(Group).options(joinedload(Group.permissions)).all(),
-        'permissions': db.query(Permission).options(joinedload(Permission.in_group)).all()
-    }
+    return db.query(Group).all()
 
 
 @router.get("", response_model=Page[UserBase])

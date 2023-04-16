@@ -42,58 +42,9 @@ class UserBase(UserBaseModel):
     groups: list[AuthGroup] = []
 
 
-class PermissionGetterDict(GetterDict):
-    def get(self, key: str, default=None):
-        if key in {'group', 'code'}:
-            return getattr(self._obj, 'permission_'+key)
-        else:
-            return super(PermissionGetterDict, self).get(key, default)
-
-
-class PermissionBase(BaseModel):
-    group: str
-    code: str
-
-    class Config:
-        orm_mode = True
-        getter_dict = PermissionGetterDict
-
-
 class GroupBase(BaseModel):
     id: int
     name: str
-    permissions: list[PermissionBase] = []
 
     class Config:
         orm_mode = True
-
-
-class PermissionInGroupBase(BaseModel):
-    code: str
-    name: str
-
-
-class GroupPermissionBase(BaseModel):
-    group: str
-    name: str
-    permissions: list[PermissionInGroupBase] = []
-
-
-class InitResponse(BaseModel):
-    groups: list[GroupBase] = []
-    permissions: list[GroupPermissionBase] = []
-
-    @validator("permissions", pre=True, allow_reuse=False)
-    def set_permissions(cls, v, values, **kwargs):
-        groups = defaultdict(
-            lambda: {'group': '', 'name': '', 'permissions': []})
-        for permission in v:
-            groups[permission.group]['group'] = permission.in_group.group
-            groups[permission.group]['name'] = _(permission.in_group.name)
-            groups[permission.group]['permissions'].append({
-                'code': permission.code,
-                'name': _(permission.name),
-            })
-        groups = list(map(lambda x: {
-            **x, 'permissions': sorted(x['permissions'], key=lambda x: x['name'])}, groups.values()))
-        return sorted(groups, key=lambda x: x['name'])

@@ -14,7 +14,10 @@
           <!-- Left Side Of Navbar -->
           <ul class="navbar-nav me-auto">
             <NavLink name="home">
-              Dashboard
+              {{ $t('layout.home') }}
+            </NavLink>
+            <NavLink name="user.index">
+              {{ $t('layout.users') }}
             </NavLink>
           </ul>
           <!-- Right Side Of Navbar -->
@@ -27,27 +30,24 @@
                 </option>
               </select>
             </div>
-
             <!-- Authentication Links -->
             <Dropdown id="settingsDropdown">
               <template #trigger>
                 {{ name }}
               </template>
-
               <template #content>
                 <!-- Account Management -->
                 <h6 class="dropdown-header small text-muted">
-                  Manage Account
+                  {{ $t('layout.account') }}
                 </h6>
                 <router-link class="dropdown-item px-4" :to="{ name: 'home' }">
-                  Profile
+                  {{ $t('layout.profile') }}
                 </router-link>
                 <hr class="dropdown-divider">
-
                 <!-- Authentication -->
                 <form @submit.prevent="logout">
                   <button type="submit" class="dropdown-item px-4">
-                    Log out
+                    {{ $t('layout.logout') }}
                   </button>
                 </form>
               </template>
@@ -92,22 +92,27 @@ export default defineComponent({
     NavLink
   },
   mounted() {
-    // Adicionar o titulo da pagina
-    if (this.title.length > 0) {
-      document.title = import.meta.env.VITE_TITLE + " | " + this.title;
-    } else document.title = import.meta.env.VITE_TITLE;
-    document.documentElement.setAttribute("lang", this.$i18n.locale.replace("_", "-"));
+    this.setTitle();
   },
-  data() {
-    return {
-
+  watch: {
+    $i18n: {
+      handler() {
+        this.setTitle();
+      },
+      deep: true
     }
   },
   computed: {
-    ...mapState(authStore, ['name'])
+    ...mapState(authStore, ['name']),
   },
   methods: {
     ...mapActions(authStore, ['logout']),
+    setTitle() {
+      if (this.title.length > 0) {
+        document.title = import.meta.env.VITE_TITLE + " | " + this.title;
+      } else document.title = import.meta.env.VITE_TITLE;
+      document.documentElement.setAttribute("lang", this.$i18n.locale.replace("_", "-"));
+    }
   },
 });
 </script>

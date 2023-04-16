@@ -9,9 +9,9 @@
             <div class="card-header">
                 <div class="row">
                     <div class="col-auto">
-                        <Link :href="route('admin.groups.create')" type="button" class="btn btn-sm btn-primary">
+                        <!-- <Link :href="route('admin.groups.create')" type="button" class="btn btn-sm btn-primary">
                         {{ $t('groups.button_new') }}
-                        </Link>
+                        </Link> -->
                     </div>
                     <div class="col-auto">
                         <div class="input-group input-group-sm mb-3">
@@ -59,7 +59,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="item in list.data">
+                        <!-- <tr v-for="item in list.data" :key="item">
                             <th scope="row">{{ item.id }}</th>
                             <td class="align-middle">
                                 <img class="rounded-circle" width="32" height="32" :src="item.profile_photo_url"
@@ -71,13 +71,12 @@
                             </td>
                             <td></td>
                             <td></td>
-                        </tr>
+                        </tr> -->
                     </tbody>
                 </table>
-                {{ list }}
             </div>
             <div class="card-body">
-                <pagination :links="list.links" />
+                <!-- <pagination :links="list.links" /> -->
             </div>
         </div>
     </app-layout>
@@ -86,20 +85,16 @@
 <script>
 import { defineComponent } from "vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
-import Pagination from "@/Components/Pagination.vue";
-import { Link } from '@inertiajs/inertia-vue3'
+// import Pagination from "@/Components/Pagination.vue";
 
 export default defineComponent({
-    props: {
-        list: Object,
-    },
     components: {
         AppLayout,
-        Pagination,
-        Link,
+        // Pagination,
     },
     data() {
         return {
+            list: {},
             order: 'name',
             search: '',
             show: 10,

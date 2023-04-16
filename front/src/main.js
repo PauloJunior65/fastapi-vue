@@ -1,5 +1,21 @@
 // Adiciona o bootstrap e o fontawesome
-import './bootstrap'
+import './sass/app.scss'
+import * as bootstrap from 'bootstrap';
+window.bootstrap = bootstrap;
+
+
+/* import the fontawesome core */
+import { library } from '@fortawesome/fontawesome-svg-core'
+
+/* import font awesome icon component */
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
+/* import specific icons */
+import { fas } from '@fortawesome/free-solid-svg-icons'
+
+/* add icons to the library */
+library.add(fas)
+
 
 // Cria a aplicação
 import { createApp } from 'vue'
@@ -21,10 +37,7 @@ app.use(router)
 import i18n from './i18n'
 app.use(i18n)
 
-// Adiciona o componente de ícones do fontawesome
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 app.component('font-awesome-icon', FontAwesomeIcon)
-app.config.productionTip = false
 
 // Adiciona o componente de layout
 import AppLayout from './layouts/AppLayout.vue'
