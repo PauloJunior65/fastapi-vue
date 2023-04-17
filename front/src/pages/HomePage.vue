@@ -5,6 +5,7 @@
         {{ $t('layout.home') }}
       </h2>
     </template>
+    <font-awesome-icon icon="fa-regular fa-circle-xmark" />
     <font-awesome-icon icon="fa-solid fa-user-secret" />
     <welcome />
   </app-layout>
