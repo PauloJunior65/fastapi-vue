@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Vue: Requirements",
+            "type": "shell",
+            "detail": "Install requirements do NPM",
+            "command": "npm install",
+            "options": {
+                "cwd": "${workspaceFolder}",
+            },
+            "presentation": {
+                "reveal": "silent",
+                "revealProblems": "onProblem",
+                "close": true
+            }
+        },
+        {
+            "label": "Vue: BUILD",
+            "dependsOn": [
+                "Vue: Requirements",
+            ],
+            "dependsOrder": "sequence",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "hide": true
+        }
+    ]
+}
