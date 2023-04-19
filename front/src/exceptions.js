@@ -2,7 +2,7 @@ import { sharedStore } from './stores/shared';
 
 /**
  * Redireciona para a página de erro
- * @param {Axios} axios - Axios error object
+ * @param {Object} axios - Axios error object
  * @param {Array<Number>} axios.codeIgnore - Array of codes to ignore
  * @param {boolean} axios.valid - If true, 422 status code will be ignored
  * @returns {boolean} true if exception is handled
@@ -25,7 +25,7 @@ function exceptions({ codeIgnore = [], valid = false, code = null, message = '',
 
 /**
  * Pegar a mensagem de erro
- * @param {AxiosError} axios - Axios error object 
+ * @param {Object} axios - Axios error object 
  * @returns {string} Error mensage 
  */
 function error_mensage({ message = undefined, response = { statusText: undefined, data: {} } } = {}) {
@@ -38,7 +38,7 @@ function error_mensage({ message = undefined, response = { statusText: undefined
 
 /**
  * Pegar os campos de erro
- * @param {AxiosError} axios - Axios error object 
+ * @param {Object} axios - Axios error object 
  * @returns {Object} Error fields { field: { msg: string, type: string } }
  */
 function error_fields({ response = { data: [] } } = {}) {

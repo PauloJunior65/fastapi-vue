@@ -16,32 +16,33 @@
                     <div class="col-auto">
                         <div class="input-group input-group-sm mb-3">
                             <label class="input-group-text">{{ $t('users.show') }}</label>
-                            <select class="form-select" v-model="size">
+                            <select class="form-select" v-model="size" @change="load">
                                 <option value="10">10</option>
+                                <option value="50">25</option>
                                 <option value="50">50</option>
+                                <option value="50">75</option>
                                 <option value="100">100</option>
-                                <option value="1000">1000</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-auto">
                         <div class="input-group input-group-sm mb-3">
                             <label class="input-group-text">{{ $t('users.order') }}</label>
-                            <select class="form-select" v-model="order">
-                                <option :value="['id', 'asc']">{{ $t('users.order1') }}</option>
-                                <option :value="['name', 'asc']">{{ $t('users.order2') }}</option>
-                                <option :value="['email', 'asc']">{{ $t('users.order3') }}</option>
-                                <option :value="['id', 'desc']">{{ $t('users.order1') }} DESC</option>
-                                <option :value="['name', 'desc']">{{ $t('users.order2') }} DESC</option>
-                                <option :value="['email', 'desc']">{{ $t('users.order3') }} DESC</option>
+                            <select class="form-select" v-model="order" @change="load">
+                                <option :value="['id', 1]">{{ $t('users.order1') }}</option>
+                                <option :value="['name', 1]">{{ $t('users.order2') }}</option>
+                                <option :value="['email', 1]">{{ $t('users.order3') }}</option>
+                                <option :value="['id', 0]">{{ $t('users.order1') }} DESC</option>
+                                <option :value="['name', 0]">{{ $t('users.order2') }} DESC</option>
+                                <option :value="['email', 0]">{{ $t('users.order3') }} DESC</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-auto">
                         <div class="input-group input-group-sm mb-3">
                             <label class="input-group-text">{{ $t('users.group') }}</label>
-                            <select class="form-select">
-                                <option value="">{{ $t('users.group_all') }}</option>
+                            <select class="form-select" v-model="group_selected" @change="load">
+                                <option :value="null">{{ $t('users.group_all') }}</option>
                                 <option v-for="item in groups" :key="item" :value="item.id">{{ item.name }}</option>
                             </select>
                         </div>
@@ -50,7 +51,7 @@
                         <div class="input-group input-group-sm mb-3">
                             <span class="input-group-text">{{ $t('users.pesquisa') }}</span>
                             <input type="text" class="form-control" :placeholder="$t('users.pesquisa_placeholder')"
-                                v-model="name">
+                                v-model="search">
                         </div>
                     </div>
                 </div>
@@ -132,6 +133,7 @@ import { mapActions, mapWritableState } from "pinia";
 import { authStore } from "../../stores/auth";
 import { sharedStore } from "../../stores/shared";
 import { api, exceptions } from "../../api";
+import _ from 'lodash';
 
 export default defineComponent({
     components: {
@@ -146,9 +148,9 @@ export default defineComponent({
             page: 1,
             pages: 1,
 
-            group_selected: '',
-            order: ['name', 'asc'],
-            name: '',
+            group_selected: null,
+            order: ['name', 1],
+            search: '',
         };
     },
     async mounted() {
@@ -160,6 +162,11 @@ export default defineComponent({
             exceptions(error);
         }
     },
+    watch: {
+        search: _.debounce(function () {
+            this.load();
+        }, 500, { maxWait: 5000 }),
+    },
     computed: {
         ...mapWritableState(sharedStore, {
             size: 'sizePerPage',
@@ -169,7 +176,16 @@ export default defineComponent({
         ...mapActions(authStore, ['perms']),
         async load() {
             try {
-                let res = await api().get('users');
+                let res = await api().get('users', {
+                    params: {
+                        page: this.page,
+                        size: this.size,
+                        order: this.order[0],
+                        asc: this.order[1],
+                        search: this.search,
+                        group: this.group_selected,
+                    }
+                });
                 res.data.items = res.data.items.map((item) => {
                     item.display_groups = false;
                     return item;

@@ -2,7 +2,13 @@ import axios from "axios";
 import { exceptions, error_mensage, error_fields } from "./exceptions";
 import { authStore } from './stores/auth';
 
-
+/**
+ * API instance
+ * @param {Object} params - Params object
+ * @param {Boolean} params.auth - If true, add Authorization header
+ * @param {Boolean} params.download - If true, set responseType to blob
+ * @returns {AxiosInstance}
+ */
 function api({ auth = true, download = false } = {}) {
     const store = authStore();
     let lang = localStorage.getItem('lang') || import.meta.env.VITE_I18N_LOCALE || 'en';

@@ -1,12 +1,25 @@
-from collections import defaultdict
 from datetime import datetime
 from typing import Union
 
 from fastapi_babel import _
 from pydantic import BaseModel, EmailStr, Field, validator
-from pydantic.utils import GetterDict
 
+from utils import *
 from utils.auth import AuthGroup
+
+
+class FormIndex(BaseModel):
+    search: str = Field(
+        default='', description="Filtrar por username, nome ou email")
+    group: int = Field(ge=1, default=None, description="Filtrar por grupo")
+    order: str = Field(default="nome", description="Ordenar por")
+    asc: bool = Field(default=True, description="Ordenar por ordem crescente")
+
+    @validator('order')
+    def validate_order(cls, v):
+        if v not in ["id", "username", "name", "email"]:
+            exception_field("order", _("Campo de ordenação inválido"))
+        return v
 
 
 class UserBaseModel(BaseModel):

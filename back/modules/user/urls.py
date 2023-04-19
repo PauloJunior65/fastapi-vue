@@ -4,7 +4,6 @@ from fastapi_babel import _
 from fastapi_pagination import Page, paginate
 
 from models.auth import Group, Permission, User, UserGroup
-from utils import *
 
 from .schemas import *
 
@@ -24,9 +23,26 @@ async def init(auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[S
 
 
 @router.get("", response_model=Page[UserBase])
-async def index(auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)]):
+async def index(auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)], form: Annotated[FormIndex, Depends()]):
     auth.check_permission("user.view")
-    return paginate(db.query(User).options(joinedload(User.groups)), length_function=lambda x: db.query(User).count())
+    wheres = []
+    if form.search:
+        wheres += [User.name.ilike(f"%{form.search}%"),
+                   User.username.ilike(f"%{form.search}%"),
+                   User.email.ilike(f"%{form.search}%")]
+    if form.group:
+        wheres += [User.groups.any(UserGroup.group_id == form.group)]
+    if form.order:
+        if form.asc:
+            order = getattr(User, form.order)
+        else:
+            order = getattr(User, form.order).desc()
+    if wheres:
+        users = db.query(User).options(joinedload(User.groups)
+                                       ).filter(*wheres).order_by(order)
+    else:
+        users = db.query(User).options(joinedload(User.groups)).order_by(order)
+    return paginate(users, length_function=lambda x: users.count())
 
 
 @router.get("/{id}", response_model=UserBase)
