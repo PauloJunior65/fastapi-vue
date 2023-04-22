@@ -81,7 +81,7 @@
                             </td>
                             <td class="align-middle text-center" @mouseenter="item.display_groups = true"
                                 @mouseleave="item.display_groups = false">
-                                <template v-if="item.display_groups">
+                                <template v-if="item.display_groups && item.groups.length > 0">
                                     <ul>
                                         <li v-for="group in item.groups" :key="group.id">
                                             {{ group.name }}

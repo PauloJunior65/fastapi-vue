@@ -38,5 +38,6 @@
   "users.option.edit": "Editar",
   "users.option.delete": "Deletar",
   "users.group_all": "Todos",
-  "layout.users": "Usuários"
+  "layout.users": "Usuários",
+  "users.title.show": "Usuários"
 }

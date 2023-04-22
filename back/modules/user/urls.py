@@ -48,7 +48,11 @@ async def index(auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[
 @router.get("/{id}", response_model=UserBase)
 async def show(id: int, auth: Annotated[Auth, Depends(get_current_user)], db: Annotated[Session, Depends(get_db)]):
     auth.check_permission("user.view")
-    return db.query(User).options(joinedload(User.groups)).get(id)
+    user = db.query(User).options(joinedload(User.groups)).get(id)
+    if not user:
+        exception(_("Usuário não encontrado"),
+                  status_code=status.HTTP_404_NOT_FOUND)
+    return user
 
 
 @router.post("", response_model=UserBase, status_code=status.HTTP_201_CREATED)
