@@ -68,3 +68,33 @@ def cmd_users(cmd: click.Group):
             name: {name if name else username}
             email: {email if email else username+'@email.com'}
         """)
+
+    @cmd.command(
+        "create-user-random",
+        help="Cria um usuários comuns aleatórios",
+    )
+    @click.argument("qdt", type=int)
+    def random(qdt: int):
+        with get_engine().connect() as db:
+            qdt_db = db.execute(
+                text("SELECT COUNT(*) FROM `auth_user`")).fetchone()[0]
+            while qdt > 0:
+                qdt_db += 1
+                username = f"teste{qdt_db}"
+                hash = Auth.get_password_hash('teste')
+                db.execute(
+                    text("INSERT INTO `auth_user` (`username`, `password`, `name`, `email`, `is_active`, `is_superuser`) VALUES (:username, :password, :name, :email, 1, 0)"), {
+                        'username': username,
+                        'password': hash,
+                        'name': {username},
+                        'email': username+'@email.com'
+                    })
+                click.echo(f"""
+                Usuario {qdt_db} criado:
+                    username: {username}
+                    password: teste (hash: {hash})
+                    name: {username}
+                    email: {username+'@email.com'}
+                """)
+                qdt -= 1
+            db.commit()
