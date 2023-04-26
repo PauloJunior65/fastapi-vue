@@ -1,11 +1,17 @@
 import { defineStore } from 'pinia';
 import { i18n } from '../i18n';
+import { useMemory } from '@vueuse/core';
 
 
 export const sharedStore = defineStore('shared-vue', {
-    state: () => ({
-        sizePerPage: 10,
-    }),
+    state: () => {
+        const { isSupported, memory } = useMemory()
+        return {
+            sizePerPage: 10,
+            isSupported,
+            memory,
+        };
+    },
     getters: {},
     actions: {
         $t(key) {
