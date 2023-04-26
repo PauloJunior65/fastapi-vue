@@ -10,10 +10,11 @@ def cli_app(app: FastAPI):
     from .translation import cmd_translation, help_translation
     from .users import cmd_users, help_users
     from .group_perms import cmd_group_perms, help_group_perms
+    from .database import cmd_database, help_database
 
     @click.group("cmd",
                  help="\n--------------------------------------\n".join([
-                     help, help_translation, help_users, help_group_perms
+                     help, help_translation, help_users, help_group_perms, help_database
                  ]))
     def cmd():
         click.clear()
@@ -33,5 +34,6 @@ def cli_app(app: FastAPI):
     cmd_translation(cmd)
     cmd_users(cmd)
     cmd_group_perms(cmd)
+    cmd_database(cmd)
 
     cmd()

@@ -48,6 +48,7 @@ groups = [
 help_group_perms = """
 Manipulação de grupos e permissões do sistema:\n
     - sync: Sincroniza as permissões do sistema com o banco de dados.\n
+    - sync-groups: Sincroniza as permissões e os grupos do sistema com o banco de dados.\n
 """
 
 
@@ -68,7 +69,8 @@ def cmd_group_perms(cmd: click.Group):
                 click.echo(f"O código do grupo {group} não é uma string.")
                 raise click.Abort
             if not isinstance(data, dict):
-                click.echo(f"Os dados do grupo {group} não são um dicionário.")
+                click.echo(
+                    f"Os dados do grupo {group} não são um dicionário.")
                 raise click.Abort
             if all(key not in data for key in ['name', 'description', 'permissions']):
                 click.echo(
