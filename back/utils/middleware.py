@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, Response
 from fastapi_babel.middleware import InternationalizationMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from .babel import babel
 from typing import Optional
 from datetime import timedelta
@@ -29,6 +30,14 @@ class I18nMiddleware(InternationalizationMiddleware):
 
 
 def add_middlewares(app: FastAPI):
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     app.add_middleware(I18nMiddleware, babel=babel)
 
     @app.middleware("http")

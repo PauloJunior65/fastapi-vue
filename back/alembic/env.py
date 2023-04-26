@@ -17,7 +17,8 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 settings = get_settings()
-DATABASE_URL = settings.databases.get('default',settings.DATABASE_URL)
+DATABASE_URL = settings.databases.get(
+    'default', {}).get('url', settings.DATABASE_URL)
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # add your model's MetaData object here

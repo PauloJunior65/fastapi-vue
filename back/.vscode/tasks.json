@@ -5,9 +5,22 @@
             "label": "Python: Requirements",
             "type": "shell",
             "detail": "Install requirements.txt",
-            "command": "pip3 install -r requirements.txt",
+            "command": "source .venv/bin/activate && python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt && deactivate .venv",
             "options": {
                 "cwd": "${workspaceFolder}",
+            },
+            "windows": {
+                "command": ".\\.venv\\Scripts\\activate.bat && python -m pip install --upgrade pip && python -m pip install -r requirements.txt && deactivate .venv",
+                "options": {
+                    "shell": {
+                        "executable": "C:\\Windows\\system32\\cmd.exe",
+                        "args": [
+                            "/d",
+                            "/c"
+                        ]
+                    },
+                    "cwd": "${workspaceFolder}"
+                }
             },
             "presentation": {
                 "reveal": "silent",
@@ -19,16 +32,22 @@
             "label": "Python: Groups e Permissions",
             "type": "shell",
             "detail": "Sincronizar grupos e permissões",
-            "command": "python3",
-            "args": [
-                "main.py",
-                "sync-groups"
-            ],
+            "command": "source .venv/bin/activate && python3 main.py sync-groups && deactivate .venv",
             "options": {
                 "cwd": "${workspaceFolder}",
             },
             "windows": {
-                "command": "python"
+                "command": ".\\.venv\\Scripts\\activate.bat && python main.py sync-groups && deactivate .venv",
+                "options": {
+                    "shell": {
+                        "executable": "C:\\Windows\\system32\\cmd.exe",
+                        "args": [
+                            "/d",
+                            "/c"
+                        ]
+                    },
+                    "cwd": "${workspaceFolder}"
+                }
             },
             "presentation": {
                 "reveal": "silent",

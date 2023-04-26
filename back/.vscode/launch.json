@@ -15,7 +15,16 @@
             "console": "integratedTerminal",
             "jinja": true,
             "justMyCode": true,
-            "preLaunchTask": "Python BUILD"
+            "presentation": {
+                "hidden": false,
+                "group": "back",
+                "order": 1
+            },
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "Python BUILD",
+            "env": {
+                "PYDEVD_DISABLE_FILE_VALIDATION": "1"
+            }
         },
     ]
 }

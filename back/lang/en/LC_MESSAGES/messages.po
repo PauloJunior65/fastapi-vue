@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-04-05 18:45-0400\n"
-"PO-Revision-Date: 2023-04-05 18:47-0400\n"
+"POT-Creation-Date: 2023-04-15 13:44-0400\n"
+"PO-Revision-Date: 2023-04-15 13:45-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -18,7 +18,79 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.12.1\n"
 
-#: main.py:18
-msgid "Hello World"
-msgstr "asd"
+#: templates/items.html:10
+msgid "Teste 2"
+msgstr ""
+
+#: utils/auth.py:32
+msgid "Usuário inativo"
+msgstr ""
+
+#: utils/auth.py:37
+msgid "Usuário ou senha inválidos"
+msgstr ""
+
+#: utils/auth.py:42
+msgid "Token expirado"
+msgstr ""
+
+#: utils/auth.py:47
+msgid "Você não tem permissão para esta ação"
+msgstr ""
+
+#: utils/auth.py:51
+msgid "Não foi possível validar as credenciais"
+msgstr ""
+
+#: utils/helper.py:5
+msgid "Not found"
+msgstr ""
+
+#: utils/cli/group_perms.py:8
+msgid "Usuários"
+msgstr ""
+
+#: utils/cli/group_perms.py:9
+msgid "Permite a criação, edição e remoção de usuários."
+msgstr ""
+
+#: utils/cli/group_perms.py:11
+msgid "Visualizar usuários."
+msgstr ""
+
+#: utils/cli/group_perms.py:12
+msgid "Adicionar usuários."
+msgstr ""
+
+#: utils/cli/group_perms.py:13
+msgid "Editar usuários."
+msgstr ""
+
+#: utils/cli/group_perms.py:14
+msgid "Remover usuários."
+msgstr ""
+
+#: utils/cli/group_perms.py:18
+msgid "Grupos"
+msgstr ""
+
+#: utils/cli/group_perms.py:19
+msgid "Permite a criação, edição e remoção de grupos."
+msgstr ""
+
+#: utils/cli/group_perms.py:21
+msgid "Visualizar grupos."
+msgstr ""
+
+#: utils/cli/group_perms.py:22
+msgid "Adicionar grupos."
+msgstr ""
+
+#: utils/cli/group_perms.py:23
+msgid "Editar grupos."
+msgstr ""
+
+#: utils/cli/group_perms.py:24
+msgid "Remover grupos."
+msgstr ""
 

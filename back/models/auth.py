@@ -2,6 +2,8 @@ from sqlalchemy import Table, Boolean, Column, ForeignKey, Integer, BigInteger, 
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.associationproxy import association_proxy
+from sqlalchemy.orm import Mapped
+from typing import List
 
 Base = declarative_base()
 
@@ -13,6 +15,7 @@ class UserGroup(Base):
         'auth_user.id', ondelete='CASCADE'), primary_key=True)
     group_id = Column(Integer, ForeignKey(
         'auth_group.id', ondelete='CASCADE'), primary_key=True)
+
     group = relationship("Group", back_populates="users")
     user = relationship("User", back_populates="groups")
 
@@ -40,7 +43,7 @@ class User(Base):
         server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
     )
 
-    groups = relationship("UserGroup", back_populates="user")
+    groups = relationship("UserGroup")
 
 
 class Group(Base):
@@ -49,7 +52,8 @@ class Group(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(150), nullable=False)
 
-    users = relationship("UserGroup", back_populates="group")
+    users = relationship("UserGroup")
+    permissions = relationship("GroupPermission")
 
 
 class PermissionGroup(Base):
@@ -59,7 +63,7 @@ class PermissionGroup(Base):
     name = Column(String(150), nullable=False)
     description = Column(String(300), nullable=False)
 
-    # permissions = relationship("Permission", back_populates="auth_permission")
+    permissions = relationship("Permission", back_populates="in_group")
 
 
 class Permission(Base):
@@ -69,6 +73,8 @@ class Permission(Base):
         "auth_permission_group.group", ondelete='CASCADE'), primary_key=True)
     code = Column(String(100), primary_key=True)
     name = Column(String(255), nullable=False)
+
+    in_group = relationship("PermissionGroup", back_populates="permissions")
 
     # model = relationship("PermissionModel", back_populates="auth_permission_model")
     # groups = relationship("Group", secondary="auth_group_has_permission", back_populates='auth_group')
@@ -81,6 +87,9 @@ class GroupPermission(Base):
         'auth_group.id', ondelete='CASCADE'), primary_key=True)
     permission_group = Column(String(100), primary_key=True)
     permission_code = Column(String(100), primary_key=True)
+
+    group = relationship("Group", back_populates="permissions")
+    permission = relationship("Permission")
 
     __table_args__ = (
         ForeignKeyConstraint(
