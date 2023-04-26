@@ -16,11 +16,11 @@
                     <div class="col-auto">
                         <div class="input-group input-group-sm mb-3">
                             <label class="input-group-text">{{ $t('users.show') }}</label>
-                            <select class="form-select" v-model="size" @change="load">
+                            <select class="form-select" v-model="sizePerPage" @change="load">
                                 <option value="10">10</option>
-                                <option value="50">25</option>
+                                <option value="25">25</option>
                                 <option value="50">50</option>
-                                <option value="50">75</option>
+                                <option value="75">75</option>
                                 <option value="100">100</option>
                             </select>
                         </div>
@@ -119,7 +119,7 @@
                 </table>
             </div>
             <div class="card-body">
-                <!-- <pagination :links="list.links" /> -->
+                <pagination v-model="page" :pages="pages" :load="load" />
             </div>
         </div>
     </app-layout>
@@ -128,7 +128,7 @@
 <script>
 import { defineComponent } from "vue";
 import AppLayout from "@/Layouts/AppLayout.vue";
-// import Pagination from "@/Components/Pagination.vue";
+import Pagination from "../../components/ItemPagination.vue";
 import { mapActions, mapWritableState } from "pinia";
 import { authStore } from "../../stores/auth";
 import { sharedStore } from "../../stores/shared";
@@ -138,7 +138,7 @@ import _ from 'lodash';
 export default defineComponent({
     components: {
         AppLayout,
-        // Pagination,
+        Pagination,
     },
     data() {
         return {
@@ -168,9 +168,7 @@ export default defineComponent({
         }, 500, { maxWait: 5000 }),
     },
     computed: {
-        ...mapWritableState(sharedStore, {
-            size: 'sizePerPage',
-        }),
+        ...mapWritableState(sharedStore, ['sizePerPage']),
     },
     methods: {
         ...mapActions(authStore, ['perms']),
@@ -179,10 +177,10 @@ export default defineComponent({
                 let res = await api().get('users', {
                     params: {
                         page: this.page,
-                        size: this.size,
+                        size: this.sizePerPage,
                         order: this.order[0],
                         asc: this.order[1],
-                        search: this.search,
+                        search: this.search ? this.search : null,
                         group: this.group_selected,
                     }
                 });

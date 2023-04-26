@@ -4,7 +4,7 @@ import { i18n } from '../i18n';
 
 export const sharedStore = defineStore('shared-vue', {
     state: () => ({
-        sizePerPage: 50,
+        sizePerPage: 10,
     }),
     getters: {},
     actions: {
