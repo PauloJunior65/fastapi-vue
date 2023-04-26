@@ -39,5 +39,6 @@
   "users.option.delete": "Deletar",
   "users.group_all": "Todos",
   "layout.users": "Usuários",
-  "users.title.show": "Usuários"
+  "users.title.show": "Usuários",
+  "hello": "as"
 }

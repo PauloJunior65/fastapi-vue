@@ -20,29 +20,33 @@ library.add(fas, fab, far)
 
 
 // Cria a aplicação
-import { createApp } from 'vue'
+import { createApp, markRaw } from 'vue'
 import App from './App.vue'
+import router from './router'
+import i18n from './i18n'
+import { createPinia } from 'pinia'
+import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import AppLayout from './layouts/AppLayout.vue'
+
 const app = createApp(App)
 
 // Adiciona o pinia
-import { createPinia } from 'pinia'
-import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 const pinia = createPinia()
+pinia.use(({ store }) => {
+    store.$router = markRaw(router)
+});
 pinia.use(piniaPluginPersistedstate)
 app.use(pinia)
 
 // Adiciona o router
-import router from './router'
 app.use(router)
 
 // Adiciona o vue-i18n
-import i18n from './i18n'
 app.use(i18n)
 
 app.component('font-awesome-icon', FontAwesomeIcon)
 
 // Adiciona o componente de layout
-import AppLayout from './layouts/AppLayout.vue'
 app.component('app-layout', AppLayout)
 
 app.mount('#app')
