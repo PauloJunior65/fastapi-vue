@@ -50,6 +50,7 @@
                     {{ $t('layout.logout') }}
                   </button>
                 </form>
+                <MemoryUse />
               </template>
             </Dropdown>
           </ul>
@@ -73,10 +74,11 @@
 
 <script>
 import { defineComponent } from "vue"
-import ApplicationMark from '../components/ApplicationMark.vue'
-import Dropdown from '../components/Dropdown.vue'
-import NavLink from '../components/NavLink.vue'
-import { authStore } from "../stores/auth"
+import ApplicationMark from '@/components/ApplicationMark.vue'
+import Dropdown from '@/components/Dropdown.vue'
+import NavLink from '@/components/NavLink.vue'
+import MemoryUse from "@/components/MemoryUse.vue";
+import { authStore } from "@/stores/auth"
 import { mapActions, mapState } from "pinia";
 
 export default defineComponent({
@@ -89,7 +91,8 @@ export default defineComponent({
   components: {
     ApplicationMark,
     Dropdown,
-    NavLink
+    NavLink,
+    MemoryUse
   },
   mounted() {
     this.setTitle();
