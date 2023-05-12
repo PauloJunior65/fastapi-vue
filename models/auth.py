@@ -30,17 +30,15 @@ class User(Base):
     password = Column(String(255), nullable=False)
     name = Column(String(300), nullable=False)
     email = Column(String(255), unique=True)
-    is_active = Column(Boolean, default=False,
-                       nullable=False, server_default=text('0'))
-    is_superuser = Column(Boolean, default=False,
-                          nullable=False, server_default=text('0'))
+    is_active = Column(Boolean, default=False,nullable=False)
+    is_superuser = Column(Boolean, default=False,nullable=False)
     date_joined = Column(TIMESTAMP)
     created_at = Column(TIMESTAMP, nullable=True,
                         server_default=text('CURRENT_TIMESTAMP'))
     updated_at = Column(
         TIMESTAMP,
         nullable=True,
-        server_default=text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'),
+        server_default=text('CURRENT_TIMESTAMP'),
     )
 
     groups = relationship("UserGroup")

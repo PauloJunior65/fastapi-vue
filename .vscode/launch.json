@@ -4,6 +4,7 @@
     // Para obter mais informações, acesse: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Python: FastAPI",
             "type": "python",
@@ -22,6 +23,20 @@
             },
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "Python BUILD",
+            "env": {
+                "PYDEVD_DISABLE_FILE_VALIDATION": "1"
+            }
+        },
+        {
+            "name": "Python: FastAPI TEST",
+            "type": "python",
+            "request": "launch",
+            "program": "main.py",
+            "args": [
+                "sync-groups",
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}",
             "env": {
                 "PYDEVD_DISABLE_FILE_VALIDATION": "1"
             }

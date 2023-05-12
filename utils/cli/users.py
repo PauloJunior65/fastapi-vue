@@ -1,5 +1,6 @@
-from utils.database import get_engine
-from utils.auth import Auth
+from utils.database import get_session
+from utils.auth import Auth, User
+from utils import Session
 from sqlalchemy import text
 import click
 
@@ -8,6 +9,12 @@ Manipulação de usuários do sistema:\n
     - create-admin: Cria um usuário admin\n
     - create-user: Cria um usuário comum\n
 """
+
+
+def add_users(db: Session, user: dict):
+    user = User(**user)
+    db.add(user)
+    db.commit()
 
 
 def cmd_users(cmd: click.Group):
@@ -23,22 +30,27 @@ def cmd_users(cmd: click.Group):
         name = kwargs.get('name', username)
         email = kwargs.get('email', username+'@email.com')
         hash = Auth.get_password_hash(password)
-        with get_engine().connect() as db:
-            db.execute(
-                text("INSERT INTO `auth_user` (`username`, `password`, `name`, `email`, `is_active`, `is_superuser`) VALUES (:username, :password, :name, :email, 1, 1)"), {
+        try:
+            with get_session(exec=True) as db:
+                add_users(db, {
                     'username': username,
                     'password': hash,
-                    'name': {name if name else username},
-                    'email': email if email else username+'@email.com'
+                    'name': name if name else username,
+                    'email': email if email else username+'@email.com',
+                    'is_active': 1,
+                    'is_superuser': 1,
                 })
-            db.commit()
-        click.echo(f"""
-        Usuario Admin criado:
-            username: {username}
-            password: {password} (hash: {hash})
-            name: {name if name else username}
-            email: {email if email else username+'@email.com'}
-        """)
+            click.echo(f"""
+            Usuario Admin criado:
+                username: {username}
+                password: {password} (hash: {hash})
+                name: {name if name else username}
+                email: {email if email else username+'@email.com'}
+            """)
+        except:
+            click.echo(f"""
+            Usuario {username} já existe!
+            """)
 
     @cmd.command(
         "create-user",
@@ -52,22 +64,27 @@ def cmd_users(cmd: click.Group):
         name = kwargs.get('name', username)
         email = kwargs.get('email', username+'@email.com')
         hash = Auth.get_password_hash(password)
-        with get_engine().connect() as db:
-            db.execute(
-                text("INSERT INTO `auth_user` (`username`, `password`, `name`, `email`, `is_active`, `is_superuser`) VALUES (:username, :password, :name, :email, 1, 0)"), {
+        try:
+            with get_session(exec=True) as db:
+                add_users(db, {
                     'username': username,
                     'password': Auth.get_password_hash(password),
-                    'name': {name if name else username},
-                    'email': email if email else username+'@email.com'
+                    'name': name if name else username,
+                    'email': email if email else username+'@email.com',
+                    'is_active': 1,
+                    'is_superuser': 0,
                 })
-            db.commit()
-        click.echo(f"""
-        Usuario criado:
-            username: {username}
-            password: {password} (hash: {hash})
-            name: {name if name else username}
-            email: {email if email else username+'@email.com'}
-        """)
+            click.echo(f"""
+            Usuario criado:
+                username: {username}
+                password: {password} (hash: {hash})
+                name: {name if name else username}
+                email: {email if email else username+'@email.com'}
+            """)
+        except:
+            click.echo(f"""
+            Usuario {username} já existe!
+            """)
 
     @cmd.command(
         "create-user-random",
@@ -75,26 +92,29 @@ def cmd_users(cmd: click.Group):
     )
     @click.argument("qdt", type=int)
     def random(qdt: int):
-        with get_engine().connect() as db:
-            qdt_db = db.execute(
-                text("SELECT COUNT(*) FROM `auth_user`")).fetchone()[0]
+        with get_session(exec=True) as db:
+            qdt_db = db.query(User).count()
             while qdt > 0:
                 qdt_db += 1
                 username = f"teste{qdt_db}"
                 hash = Auth.get_password_hash('teste')
-                db.execute(
-                    text("INSERT INTO `auth_user` (`username`, `password`, `name`, `email`, `is_active`, `is_superuser`) VALUES (:username, :password, :name, :email, 1, 0)"), {
+                try:
+                    add_users(db, {
                         'username': username,
                         'password': hash,
-                        'name': {username},
+                        'name': username,
                         'email': username+'@email.com'
                     })
-                click.echo(f"""
-                Usuario {qdt_db} criado:
-                    username: {username}
-                    password: teste (hash: {hash})
-                    name: {username}
-                    email: {username+'@email.com'}
-                """)
+                    click.echo(f"""
+                    Usuario {qdt_db} criado:
+                        username: {username}
+                        password: teste (hash: {hash})
+                        name: {username}
+                        email: {username+'@email.com'}
+                    """)
+                except:
+                    click.echo(f"""
+                    Usuario {username} já existe!
+                    """)
                 qdt -= 1
             db.commit()

@@ -1,5 +1,5 @@
-from utils.database import get_engine
-from sqlalchemy import text, Connection
+from utils.database import get_session,Session
+from models.auth import PermissionGroup,Permission,Group,GroupPermission
 from fastapi_babel import _
 import click
 
@@ -58,11 +58,11 @@ def cmd_group_perms(cmd: click.Group):
         help="""Sincroniza as permissões do sistema com o banco de dados.""",
     )
     def sync():
-        with get_engine().connect() as db:
+        with get_session(exec=True) as db:
             sync_perms(db)
             db.commit()
 
-    def sync_perms(db: Connection):
+    def sync_perms(db: Session):
         click.echo("Validando permissões...")
         for group, data in permissions.items():
             if not isinstance(group, str):
@@ -101,42 +101,49 @@ def cmd_group_perms(cmd: click.Group):
         code_group_perms = list()
         code_perms = list()
         for group, data in permissions.items():
-            db.execute(text("INSERT INTO `auth_permission_group`(`group`, `name`, `description`) VALUES (:group,:name,:description) ON DUPLICATE KEY UPDATE `group`=:group, name=:name,description=:description;"), {
-                'group': group,
-                'name': data['name'],
-                'description': data['description']
-            })
-            code_group_perms.append(group)
+            group_obj = db.query(PermissionGroup).filter(PermissionGroup.group == group).first()
+            if not group_obj:
+                group_obj = PermissionGroup(
+                    group=group,
+                    name=data['name'],
+                    description=data['description']
+                )
+            else:
+                group_obj.name = data['name']
+                group_obj.description = data['description']
+            db.add(group_obj)
+            db.flush()
             click.echo(f"\tGrupo {group} sincronizado.")
+            code_group_perms.append(group)
             for perm, name in data['permissions'].items():
-                db.execute(text("INSERT INTO `auth_permission`(`group`, `code`, `name`) VALUES (:group,:code,:name) ON DUPLICATE KEY UPDATE `group`=:group, `code`=:code,name=:name;"), {
-                    'group': group,
-                    'code': perm,
-                    'name': name
-                })
-                code_perms.append(f'{group}.{perm}')
+                perm_obj = db.query(Permission).filter(Permission.group == group, Permission.code == perm).first()
+                if not perm_obj:
+                    perm_obj = Permission(
+                        group=group,
+                        code=perm,
+                        name=name
+                    )
+                else:
+                    perm_obj.name = name
+                db.add(perm_obj)
+                db.flush()
                 click.echo(f"\t\tPermissão {group}.{perm} sincronizada.")
-        for item in db.execute(text("SELECT `group` FROM `auth_permission_group`;")).fetchall():
+                code_perms.append((group,perm))
+        for item in db.query(PermissionGroup).all():
             if item.group not in code_group_perms:
-                db.execute(text("DELETE FROM `auth_permission_group` WHERE `group`=:group;"), {
-                    'group': item.group
-                })
+                db.delete(item)
                 click.echo(f"\tGrupo {item.group} removido.")
-        for item in db.execute(text("SELECT CONCAT(`group`,'.',`code`) as `perm`,`group`,`code` FROM `auth_permission`;")).fetchall():
-            if item.perm not in code_perms:
-                db.execute(text("DELETE FROM `auth_permission` WHERE `group`=:group AND `code`=:code;"), {
-                    'group': item.group,
-                    'code': item.code
-                })
-                click.echo(
-                    f"\tPermissão {item.group}.{item.code} removida.")
+        for item in db.query(Permission).all():
+            if (item.group,item.code) not in code_perms:
+                db.delete(item)
+                click.echo(f"\tPermissão {item.group}.{item.code} removida.")
 
     @cmd.command(
         "sync-groups",
         help="""Sicroniza os grupos do sistema com o banco de dados.""",
     )
     def sync_groups():
-        with get_engine().connect() as db:
+        with get_session(exec=True) as db:
             sync_perms(db)
             list_perms = [(group, perm) for group, data in permissions.items()
                           for perm in data['permissions'].keys()]
@@ -196,29 +203,28 @@ def cmd_group_perms(cmd: click.Group):
             # Sincronização dos grupos
             click.echo("Sincronizando grupos...")
             for group in groups:
-                item = db.execute(text("SELECT id FROM `auth_group` WHERE `name`=:name LIMIT 1;"), {
-                    'name': group['name']
-                }).fetchone()
-                if item is None:
-                    item = db.execute(text("INSERT INTO `auth_group`(`name`) VALUES (:name);"), {
-                        'name': group['name']
-                    }).lastrowid
-                else:
-                    item = item.id
+                item = db.query(Group).filter(Group.name == group['name']).first()
+                if not item:
+                    item = Group(name=group['name'])
+                    db.add(item)
+                    db.flush()
                 click.echo(f"\tGrupo {group['name']} sincronizado.")
-                db.execute(text("DELETE FROM `auth_group_has_permission` WHERE `group_id`=:group_id;"), {
-                    'group_id': item
-                })
+                db.query(GroupPermission).filter(GroupPermission.group_id == item.id).delete()
                 modules = group['modules']
                 for group_name, perm_name in list_perms:
                     if modules is None or \
                         (isinstance(modules, list) and group_name in modules) or \
                             (isinstance(modules, dict) and group_name in modules.keys() and (modules[group_name] is None or perm_name in modules[group_name])):
-                        db.execute(text("INSERT INTO `auth_group_has_permission`(`group_id`, `permission_group`, `permission_code`) VALUES (:group_id,:permission_group,:permission_code);"), {
-                            'group_id': item,
-                            'permission_group': group_name,
-                            'permission_code': perm_name
-                        })
+                        item_permission = db.query(GroupPermission).filter(
+                            GroupPermission.group_id == item.id, GroupPermission.permission_group == group_name, GroupPermission.permission_code == perm_name).first()
+                        if not item_permission:
+                            item_permission = GroupPermission(
+                                group_id=item.id,
+                                permission_group=group_name,
+                                permission_code=perm_name
+                            )
+                            db.add(item_permission)
+                            db.flush()
                         click.echo(
                             f"\t\tPermissão {group_name}.{perm_name} sincronizada.")
             db.commit()

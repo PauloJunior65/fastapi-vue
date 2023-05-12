@@ -73,6 +73,7 @@ def save_user(db: Session, obj: dict, id=None) -> User:
     if password:
         obj['password'] = Auth.get_password_hash(password)
     if id != None:
+        obj['updated_at'] = datetime.now()
         res = db.query(User).filter(User.id == id).update(obj)
         if res < 1:
             exception_field("id", _("Usuário não encontrado"))

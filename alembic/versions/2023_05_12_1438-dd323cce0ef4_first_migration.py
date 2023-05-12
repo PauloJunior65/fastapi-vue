@@ -1,8 +1,8 @@
-"""First migration
+"""first_migration
 
-Revision ID: 84ec824554fc
+Revision ID: dd323cce0ef4
 Revises: 
-Create Date: 2023-04-26 11:27:18.213642
+Create Date: 2023-05-12 14:38:37.390854
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '84ec824554fc'
+revision = 'dd323cce0ef4'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -35,11 +35,11 @@ def upgrade() -> None:
     sa.Column('password', sa.String(length=255), nullable=False),
     sa.Column('name', sa.String(length=300), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=True),
-    sa.Column('is_active', sa.Boolean(), server_default=sa.text('0'), nullable=False),
-    sa.Column('is_superuser', sa.Boolean(), server_default=sa.text('0'), nullable=False),
+    sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('is_superuser', sa.Boolean(), nullable=False),
     sa.Column('date_joined', sa.TIMESTAMP(), nullable=True),
     sa.Column('created_at', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
-    sa.Column('updated_at', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP'), nullable=True),
+    sa.Column('updated_at', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=True),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')
     )

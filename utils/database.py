@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker,Session
 from .config import get_settings
 
 settings = get_settings()
@@ -21,8 +21,11 @@ _session_databases = {name: _create_session_database(
     **data) for name, data in settings.databases.items() if isinstance(data, dict) and isinstance(data.get("url"), str)}
 
 
-def get_session(name: str = "default"):
-    return _session_databases.get(name, (None, None))[0]
+def get_session(name: str = "default",exec=False):
+    session = _session_databases.get(name, (None, None))[0]
+    if exec and hasattr(session, 'begin'):
+        session = session.begin()
+    return session
 
 
 def get_engine(name: str = "default"):
