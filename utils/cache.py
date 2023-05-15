@@ -2,11 +2,6 @@ from .config import get_settings
 import pickle
 import redis
 
-from typing import TypeVar
-
-_T = TypeVar("_T")
-_VT = TypeVar("_VT")
-
 settings = get_settings()
 
 
@@ -137,7 +132,7 @@ class Cache:
         value = self._serializer.dumps(value)
         self._cache.set(key, value, ex=timeout)
 
-    def get_or_set(self, key: str, default: _VT | _T, timeout: int = settings.CACHE_TIMEOUT) -> _VT | _T:
+    def get_or_set(self, key: str, default, timeout: int = settings.CACHE_TIMEOUT):
         """Retorna um valor do cache ou adiciona um valor padrão
 
         Args:
