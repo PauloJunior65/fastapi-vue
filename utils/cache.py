@@ -108,7 +108,7 @@ class Cache:
         value = self._serializer.dumps(value)
         return bool(self._cache.set(key, value, ex=timeout, nx=True))
 
-    def get(self, key: str, default: _VT | _T = None) -> _VT | _T:
+    def get(self, key: str, default = None):
         """Retorna um valor do cache
 
         Args:
