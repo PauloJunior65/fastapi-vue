@@ -17,19 +17,20 @@
 			"label": "PHPMyAdmin",
 			"onAutoForward": "silent"
 		},
-		"8025": {
+		"8081": {
+			"label": "Redis Commander",
+			"onAutoForward": "silent"
+		},
+		"8082": {
 			"label": "MailPit",
 			"onAutoForward": "silent"
 		}
 	},
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "pip install --user -r requirements.txt",
-
-	// Configure tool-specific properties.
-	// "customizations": {},
+	"postCreateCommand": "./.devcontainer/post-create.sh",
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-	// "remoteUser": "root"
+	"remoteUser": "root",
 	"shutdownAction": "stopCompose"
 }

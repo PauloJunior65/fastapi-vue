@@ -14,6 +14,7 @@ services:
 
     links:
       - mariadb
+      - redis
       - mailpit
 
   mariadb:
@@ -23,6 +24,23 @@ services:
       - ./mariadb:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: root
+  
+  redis:
+    image: redis:latest
+    restart: unless-stopped
+    volumes:
+      - ./redis:/data
+    environment:
+      REDIS_PASSWORD: root
+
+  redis-manager:
+    image: rediscommander/redis-commander:latest
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      REDIS_HOSTS: redis
+      REDIS_PASSWORD: root
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -43,7 +61,7 @@ services:
     volumes:
       - ./mailpit:/data
     ports:
-      - 8025:8025
+      - 8082:8025
       # - 1025:1025
     environment:
       MP_MAX_MESSAGES: 5000

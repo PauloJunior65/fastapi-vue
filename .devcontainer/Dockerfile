@@ -1,6 +1,10 @@
 FROM mcr.microsoft.com/devcontainers/python:1-3.11-bullseye
 
 ENV PYTHONUNBUFFERED 1
+ENV PIP_ROOT_USER_ACTION=ignore
+ENV POETRY_VIRTUALENVS_CREATE=false
+
+RUN pip install --upgrade pip
 
 # [Optional] If your requirements rarely change, uncomment this section to add them to the image.
 # COPY requirements.txt /tmp/pip-tmp/
