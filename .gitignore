@@ -1,3 +1,5 @@
+.devcontainer/mailpit
+.devcontainer/mariadb
 __pycache__
 .venv
 .env
