@@ -3,10 +3,16 @@
     "files.exclude": {
         "**/__pycache__": true,
         "**/.devcontainer": true,
+        "**/.devcontainer/mailpit": true,
+        "**/.devcontainer/mariadb": true,
+        "**/.devcontainer/redis": true,
         "**/.git": true,
         "**/.github": true,
         "**/.vscode": true,
+        "**/.pytest_cache": true,
+        "**/.ruff_cache": true,
         "**/htmlcov": true,
         "poetry.lock": true,
+        ".coverage": true,
     }
 }

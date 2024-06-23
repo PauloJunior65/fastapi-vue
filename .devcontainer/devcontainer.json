@@ -11,8 +11,12 @@
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// This can be used to network with other containers or the host.
-	// "forwardPorts": [8080]
+	"forwardPorts": [8000,8080,8081,8082],
 	"portsAttributes": {
+		"8000": {
+			"label": "FastAPI",
+			"onAutoForward": "openBrowser"
+		},
 		"8080": {
 			"label": "PHPMyAdmin",
 			"onAutoForward": "silent"

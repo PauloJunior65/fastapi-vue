@@ -10,6 +10,10 @@ package-mode = false
 [tool.poetry.dependencies]
 python = "^3.11"
 fastapi = "^0.111.0"
+sqlalchemy = "^2.0.31"
+pydantic-settings = "^2.3.3"
+pyjwt = "^2.8.0"
+pwdlib = {extras = ["argon2"], version = "^0.2.0"}
 
 
 [tool.poetry.group.dev.dependencies]
@@ -36,7 +40,7 @@ lint = 'ruff check . && ruff check . --diff'
 format = 'ruff check . --fix && ruff format .'
 run = 'fastapi dev app.py'
 pre_test = 'task lint'
-test = 'pytest -s -x --cov=api -vv'
+test = 'pytest -s -x --cov=./ -vv'
 post_test = 'coverage html'
 
 [tool.ruff.format]

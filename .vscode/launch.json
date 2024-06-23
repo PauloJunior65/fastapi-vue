@@ -9,6 +9,12 @@
             "type": "node-terminal",
             "request": "launch",
             "command": "task run"
+        },
+        {
+            "name": "FastAPI:Test",
+            "type": "node-terminal",
+            "request": "launch",
+            "command": "task test"
         }
     ]
 }
