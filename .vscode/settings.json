@@ -14,5 +14,6 @@
         "**/htmlcov": true,
         "poetry.lock": true,
         ".coverage": true,
-    }
+    },
+    "cSpell.language": "en,pt-BR"
 }

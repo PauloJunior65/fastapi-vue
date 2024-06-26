@@ -6,6 +6,7 @@
 .devcontainer/mariadb
 .devcontainer/redis
 .devcontainer/mailpit
+.devcontainer/teste.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

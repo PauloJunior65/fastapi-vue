@@ -1,24 +1,22 @@
-# import importlib
-# import sys
-# from pathlib import Path
+import importlib
+from pathlib import Path
 
-# from sqlalchemy.orm import registry
+from sqlmodel import SQLModel
 
-# table_registry = registry()
+# Percorre todos os arquivos .py dentro do diretório "models" e subdiretórios
+for module_path in Path('models').rglob('*.py'):
+    if '__init__.py' in str(module_path):
+        continue
+    module_name = module_path.stem
+    module = importlib.import_module(f'{module_name}' if __name__ == '__main__' else f'models.{module_name}')
+    for obj_name in dir(module):
+        obj = getattr(module, obj_name)
+        if isinstance(obj, type) and issubclass(obj, SQLModel) and obj != SQLModel:
+            globals()[obj_name] = obj
 
-# # Percorre todos os arquivos .py dentro do diretório "models" e subdiretórios
-# for module_path in Path('models').rglob('*.py'):
-#     if '__init__.py' in str(module_path):
-#         continue
-#     module_name = module_path.stem
-
-#     # Verifica se o módulo já foi importado anteriormente
-#     if module_name in sys.modules:
-#         continue
-
-#     # Carrega o módulo
-#     module = importlib.import_module(f'models.{module_name}')
-
-#     # Verifica se o módulo possui um objeto "table_registry" e adiciona ao registro principal
-#     if hasattr(module, 'table_registry') and isinstance(module.table_registry, registry):
-#         table_registry.add_registry(module.table_registry)
+# Remove as classes que não são filhas de SQLModel
+for k, v in list(globals().items()):
+    if isinstance(v, type) and issubclass(v, SQLModel):
+        continue
+    globals().pop(k)
+del k, v

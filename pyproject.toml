@@ -9,11 +9,13 @@ package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.111.0"
+fastapi = {extras = ["all"], version = "^0.111.0"}
 sqlalchemy = "^2.0.31"
-pydantic-settings = "^2.3.3"
 pyjwt = "^2.8.0"
 pwdlib = {extras = ["argon2"], version = "^0.2.0"}
+sqlmodel = "^0.0.19"
+alembic = "^1.13.1"
+pymysql = "^1.1.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -42,6 +44,8 @@ run = 'fastapi dev app.py'
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=./ -vv'
 post_test = 'coverage html'
+migrations = 'alembic revision --autogenerate -m'
+migrate = 'alembic upgrade head'
 
 [tool.ruff.format]
 preview = true
