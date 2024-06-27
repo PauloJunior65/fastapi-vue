@@ -2,7 +2,7 @@ from functools import lru_cache
 
 from sqlmodel import Session, create_engine
 
-from utils.config import get_settings
+from core.settings import get_settings
 
 settings = get_settings()
 
