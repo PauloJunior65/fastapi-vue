@@ -13,11 +13,7 @@ class Settings(BaseSettings):
     AUTH_CACHE_TIMEOUT_MINUTES: int = 5
     AUTH_TOKEN_EXPIRE_MINUTES: int = 30
 
-    CACHE_HOST: str = "127.0.0.1"
-    CACHE_PORT: int = 6379
-    CACHE_USERNAME: str = ""
-    CACHE_PASSWORD: str = ""
-    CACHE_DB: int = 1
+    CACHE_URL: str = "redis://localhost:6379"
     CACHE_TIMEOUT: int = 300
 
     DATABASE_DEBUG: bool = False
@@ -33,16 +29,6 @@ class Settings(BaseSettings):
     @property
     def languages(self):
         return list(set([self.DEFAULT_LANGUAGE]) | self.SUPPORTED_LANGUAGE)
-
-    @property
-    def cache(self):
-        return {
-                'host': self.CACHE_HOST,
-                'port': self.CACHE_PORT,
-                'username': self.CACHE_USERNAME,
-                'password': self.CACHE_PASSWORD,
-                'db': self.CACHE_DB
-            }
 
     @property
     def databases(self):

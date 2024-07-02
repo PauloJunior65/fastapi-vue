@@ -16,7 +16,7 @@ def get_engines():
     return {name: create_engine(url) for name, url in settings.databases.items() if isinstance(url, str)}
 
 
-def get_session(name: str = "default"):
+def get_database(name: str = "default"):
     engine = get_engines().get(name)
     if engine is None:
         raise ValueError(f"Database {name} not found")

@@ -3,7 +3,7 @@ from typing import Optional
 
 from sqlmodel import Field, SQLModel, UniqueConstraint, func
 
-from utils.hashing import get_password_hash, verify_password
+from core.hashing import get_password_hash, verify_password
 
 
 class User(SQLModel, table=True):
@@ -17,6 +17,7 @@ class User(SQLModel, table=True):
     email: str = Field(unique=True, nullable=True, description='E-mail do usuário')
     is_active: Optional[bool] = Field(default=True, nullable=False, description='Usuário ativo')
     is_superuser: Optional[bool] = Field(default=False, nullable=False, description='Usuário superusuário')
+    disabled_expire_token: Optional[bool] = Field(default=False, nullable=False, description='Desabilita a expiração do token')
     date_joined: Optional[datetime] = Field(nullable=True, description='Data do último login')
     created_at: Optional[datetime] = Field(description='Data de criação do registro', sa_column_kwargs=dict(server_default=func.now()))
 
@@ -27,9 +28,6 @@ class User(SQLModel, table=True):
 
     def check_password(self, password: str) -> bool:
         return verify_password(password, self.password)
-
-    def set_password(self, password: str) -> None:
-        self.password = get_password_hash(password)
 
 
 class Group(SQLModel, table=True):

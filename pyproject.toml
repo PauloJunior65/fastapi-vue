@@ -16,6 +16,7 @@ pwdlib = {extras = ["argon2"], version = "^0.2.0"}
 sqlmodel = "^0.0.19"
 alembic = "^1.13.1"
 pymysql = "^1.1.1"
+aioredis = "^2.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -40,7 +41,7 @@ addopts = '-p no:warnings'
 [tool.taskipy.tasks]
 lint = 'ruff check . && ruff check . --diff'
 format = 'ruff check . --fix && ruff format .'
-run = 'fastapi dev app.py'
+run = 'fastapi dev main.py'
 pre_test = 'task lint'
 test = 'pytest -s -x --cov=./ -vv'
 post_test = 'coverage html'

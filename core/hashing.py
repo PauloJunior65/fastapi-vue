@@ -63,7 +63,7 @@ def create_access_token(data: dict, expires_delta: int = settings.AUTH_TOKEN_EXP
     return encoded_jwt
 
 
-def read_access_token(token: str) -> dict:
+def read_access_token(token: str, exception=True) -> dict:
     """
     Decodifica o token de acesso e retorna o payload como um dicionário.
 
@@ -79,12 +79,15 @@ def read_access_token(token: str) -> dict:
     try:
         return decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
     except ExpiredSignatureError:
-        raise create_exception(
-            message='Expired token',
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            headers={"WWW-Authenticate": "Bearer"})
+        if exception:
+            raise create_exception(
+                message='Expired token',
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                headers={"WWW-Authenticate": "Bearer"})
     except InvalidTokenError:
-        raise create_exception(
-            message='Invalid token',
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            headers={"WWW-Authenticate": "Bearer"})
+        if exception:
+            raise create_exception(
+                message='Invalid token',
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                headers={"WWW-Authenticate": "Bearer"})
+    return False
