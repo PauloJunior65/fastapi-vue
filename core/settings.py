@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     DEFAULT_LANGUAGE: str = "pt"
     SUPPORTED_LANGUAGE: Set[str] = set(['pt', 'en'])
 
+    MODE_TEST: bool = False
+
     class Config:
         env_file = ".env"
 
@@ -32,6 +34,11 @@ class Settings(BaseSettings):
 
     @property
     def databases(self):
+        if self.MODE_TEST:
+            return {
+                'default':  "sqlite:///:memory:",
+                **{k: "sqlite:///:memory:" for k in self.DATABASE_URLS.keys()}
+            }
         return {
             'default':  self.DATABASE_URL,
             **self.DATABASE_URLS

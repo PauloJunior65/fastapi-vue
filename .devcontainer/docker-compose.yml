@@ -20,18 +20,18 @@ services:
   mariadb:
     image: mariadb:latest
     restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_bin
     volumes:
       - ./mariadb:/var/lib/mysql
     environment:
-      MARIADB_ROOT_PASSWORD: root
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: 1
+      MARIADB_DATABASE: fastapi
   
   redis:
     image: redis:latest
     restart: unless-stopped
     volumes:
       - ./redis:/data
-    environment:
-      REDIS_PASSWORD: root
 
   redis-manager:
     image: rediscommander/redis-commander:latest
@@ -40,7 +40,6 @@ services:
       - 8081:8081
     environment:
       REDIS_HOSTS: redis
-      REDIS_PASSWORD: root
 
   phpmyadmin:
     image: phpmyadmin:latest
@@ -48,10 +47,10 @@ services:
     ports:
       - 8080:80
     environment:
+      PMA_ARBITRARY: 1
       PMA_HOST: mariadb
       PMA_PORT: 3306
       PMA_USER: root
-      PMA_PASSWORD: root
     links:
       - mariadb
 

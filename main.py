@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 
-from routes import routers
+# from routes import routers
 
 app = FastAPI(swagger_ui_parameters={"defaultModelsExpandDepth": -1})
-app.include_router(routers)
+# app.include_router(routers)
 
 @app.get('/')
 def read_root():
